@@ -39,20 +39,15 @@
       "oneClick": false,
       "perMachine": true,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "dist/favicon.ico",
-      "uninstallerIcon": "dist/favicon.ico",
-      "installerHeaderIcon": "dist/favicon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "BizSuite"
     },
     "mac": {
-      "target": "dmg",
-      "icon": "dist/favicon.ico"
+      "target": "dmg"
     },
     "linux": {
-      "target": "AppImage",
-      "icon": "dist/favicon.ico"
+      "target": "AppImage"
     }
   }
 }

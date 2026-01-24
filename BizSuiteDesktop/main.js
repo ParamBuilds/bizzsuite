@@ -1,11 +1,21 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+
+// Only load auto-updater in production (it may not be available in dev)
+let autoUpdater = null;
+try {
+  autoUpdater = require('./auto-updater');
+} catch (e) {
+  console.log('[BizSuite Desktop] Auto-updater not available:', e.message);
+}
 
 // Parse command line arguments
 const isDebug = process.argv.includes('--debug') || process.env.NODE_ENV !== 'production';
 
+let mainWindow = null;
+
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 1024,
@@ -13,7 +23,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: true
+      webSecurity: true,
+      preload: path.join(__dirname, 'preload.js')
     },
     // Professional desktop app appearance
     icon: path.join(__dirname, 'dist', 'favicon.ico'),
@@ -32,7 +43,7 @@ function createWindow() {
   console.log('[BizSuite Desktop] __dirname:', __dirname);
 
   // Load the app
-  win.loadFile(indexPath)
+  mainWindow.loadFile(indexPath)
     .then(() => {
       console.log('[BizSuite Desktop] Successfully loaded index.html');
     })
@@ -42,37 +53,59 @@ function createWindow() {
     });
 
   // Show window when ready to prevent white flash
-  win.once('ready-to-show', () => {
-    win.show();
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    
+    // Initialize auto-updater in production
+    if (autoUpdater && !isDebug) {
+      autoUpdater.initAutoUpdater(mainWindow);
+    }
     
     // Open DevTools in debug mode
     if (isDebug) {
-      win.webContents.openDevTools();
+      mainWindow.webContents.openDevTools();
       console.log('[BizSuite Desktop] DevTools opened (debug mode)');
     }
   });
 
   // Handle window closed
-  win.on('closed', () => {
+  mainWindow.on('closed', () => {
     console.log('[BizSuite Desktop] Window closed');
+    mainWindow = null;
   });
 
   // Log any load failures
-  win.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
     console.error('[BizSuite Desktop] Load failed:', errorCode, errorDescription);
   });
 
   // Log console messages from renderer
-  win.webContents.on('console-message', (event, level, message, line, sourceId) => {
+  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
     if (isDebug) {
       console.log('[Renderer]', message);
     }
   });
+
+  return mainWindow;
 }
+
+// IPC Handlers
+ipcMain.handle('get-version', () => {
+  return app.getVersion();
+});
+
+ipcMain.handle('check-for-updates', () => {
+  if (autoUpdater) {
+    autoUpdater.checkForUpdates();
+    return true;
+  }
+  return false;
+});
 
 // App ready
 app.whenReady().then(() => {
   console.log('[BizSuite Desktop] App ready, creating window...');
+  console.log('[BizSuite Desktop] App version:', app.getVersion());
   createWindow();
 
   app.on('activate', () => {

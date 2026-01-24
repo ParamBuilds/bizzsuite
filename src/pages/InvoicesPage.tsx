@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, FileText, MoreHorizontal, Pencil, Trash2, Eye, Send, CheckCircle, Download } from 'lucide-react';
+import { Plus, Search, FileText, MoreHorizontal, Pencil, Trash2, Eye, Send, CheckCircle, Download, MessageCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -275,6 +275,41 @@ export default function InvoicesPage() {
       toast.error('Failed to generate PDF');
       console.error(error);
     }
+  };
+
+  const handleWhatsAppShare = async (invoice: any) => {
+    const customerPhone = invoice.customers?.phone;
+    const customerName = invoice.customers?.name || 'Customer';
+    const amount = Number(invoice.total_amount).toLocaleString('en-IN');
+    
+    const message = encodeURIComponent(
+      `Hello ${customerName},\n\n` +
+      `Thank you for your business! Here are your invoice details:\n\n` +
+      `📄 Invoice: ${invoice.invoice_number}\n` +
+      `💰 Amount: ₹${amount}\n` +
+      `📅 Due Date: ${invoice.due_date ? format(new Date(invoice.due_date), 'dd MMM yyyy') : 'N/A'}\n\n` +
+      `Please let us know if you have any questions.\n\n` +
+      `Regards,\n${business?.name || 'Your Business'}`
+    );
+    
+    // Clean phone number (remove spaces, dashes, etc.)
+    let phoneNumber = customerPhone?.replace(/[\s\-\(\)]/g, '') || '';
+    
+    // Add country code if not present (default to India +91)
+    if (phoneNumber && !phoneNumber.startsWith('+')) {
+      if (phoneNumber.startsWith('91')) {
+        phoneNumber = '+' + phoneNumber;
+      } else {
+        phoneNumber = '+91' + phoneNumber;
+      }
+    }
+    
+    const whatsappUrl = phoneNumber 
+      ? `https://wa.me/${phoneNumber.replace('+', '')}?text=${message}`
+      : `https://wa.me/?text=${message}`;
+    
+    window.open(whatsappUrl, '_blank');
+    toast.success('Opening WhatsApp...');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -642,6 +677,13 @@ export default function InvoicesPage() {
                           >
                             <Download className="mr-2 h-4 w-4" />
                             Download PDF
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleWhatsAppShare(invoice)}
+                            className="text-success"
+                          >
+                            <MessageCircle className="mr-2 h-4 w-4" />
+                            Share via WhatsApp
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem

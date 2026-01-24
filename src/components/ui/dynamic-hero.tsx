@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useCallback, useState, forwardRef } from 'react';
 
 // Helper to parse 'rgb(r, g, b)' or 'rgba(r, g, b, a)' string to {r, g, b}
 const parseRgbColor = (colorString: string | null) => {
@@ -45,7 +45,7 @@ interface HeroSectionProps {
     onButtonClick?: () => void;
 }
 
-const HeroSection = ({
+const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({
     heading = "Something you really want",
     tagline = "You can't live without this product. I'm sure of it.",
     buttonText = "Get Started",
@@ -53,7 +53,7 @@ const HeroSection = ({
     videoUrl,
     navItems = defaultNavItems,
     onButtonClick,
-}: HeroSectionProps) => {
+}, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const targetRef = useRef<HTMLButtonElement>(null);
     const mousePosRef = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
@@ -388,6 +388,8 @@ const HeroSection = ({
             <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
         </section>
     );
-};
+});
+
+HeroSection.displayName = 'HeroSection';
 
 export { HeroSection };

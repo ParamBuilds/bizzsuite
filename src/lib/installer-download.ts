@@ -3,23 +3,22 @@
 
 import { FINAL_PRODUCT_MODE } from './final-product-mode';
 
-// Configurable installer URLs - set these in production
-// These can be updated to point to actual hosted installers
+// Installer URLs hosted on GitHub Releases
 export const INSTALLER_CONFIG = {
   windows: {
-    url: '', // Set to actual URL like 'https://cdn.example.com/BizSuite-Setup-v1.0.0.exe'
+    url: 'https://github.com/ParamBuilds/bizzsuite/releases/download/BizSuite/BizSuite-Setup.exe',
     fileName: 'BizSuite-Setup.exe',
-    size: '85 MB',
+    size: '~100 MB',
   },
   mac: {
-    url: '', // Set to actual URL like 'https://cdn.example.com/BizSuite-v1.0.0.dmg'
+    url: '', // Coming soon - Mac installer
     fileName: 'BizSuite.dmg',
-    size: '92 MB',
+    size: '~100 MB',
   },
   linux: {
-    url: '', // Set to actual URL like 'https://cdn.example.com/BizSuite-v1.0.0.AppImage'
+    url: '', // Coming soon - Linux installer
     fileName: 'BizSuite.AppImage',
-    size: '88 MB',
+    size: '~100 MB',
   },
   // Support email for when installers are unavailable
   supportEmail: 'parambuilds@proton.me',

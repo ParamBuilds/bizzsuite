@@ -84,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email with license key
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: "BizSuite <onboarding@resend.dev>", // Use your verified domain in production
+      from: "BizSuite <noreply@logchainapp.lovable.app>",
       to: [userEmail],
       subject: "🎉 Your BizSuite Lifetime License Key",
       html: `

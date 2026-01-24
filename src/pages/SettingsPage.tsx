@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useBusiness } from '@/contexts/BusinessContext';
+import { useSeedData } from '@/hooks/useSeedData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,12 +10,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Receipt, Save } from 'lucide-react';
+import { Building2, Receipt, Save, Database, Loader2 } from 'lucide-react';
+
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const { business, profile, refetch } = useBusiness();
   const queryClient = useQueryClient();
+  const seedData = useSeedData();
 
   const [businessForm, setBusinessForm] = useState({
     name: business?.name || '',
@@ -94,7 +97,7 @@ export default function SettingsPage() {
   });
 
   // Update form when business data loads
-  useState(() => {
+  useEffect(() => {
     if (business) {
       setBusinessForm({
         name: business.name || '',
@@ -108,9 +111,9 @@ export default function SettingsPage() {
         gstin: business.gstin || '',
       });
     }
-  });
+  }, [business]);
 
-  useState(() => {
+  useEffect(() => {
     if (gstSettings) {
       setGstSettingsForm({
         legal_name: gstSettings.legal_name || '',
@@ -119,7 +122,7 @@ export default function SettingsPage() {
         default_gst_rate: String(gstSettings.default_gst_rate || 18),
       });
     }
-  });
+  }, [gstSettings]);
 
   return (
     <div className="space-y-6 animate-fade-in max-w-3xl">
@@ -129,7 +132,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="business" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="business" className="gap-2">
             <Building2 className="h-4 w-4" />
             Business
@@ -137,6 +140,10 @@ export default function SettingsPage() {
           <TabsTrigger value="gst" className="gap-2">
             <Receipt className="h-4 w-4" />
             GST Settings
+          </TabsTrigger>
+          <TabsTrigger value="data" className="gap-2">
+            <Database className="h-4 w-4" />
+            Data
           </TabsTrigger>
         </TabsList>
 
@@ -300,6 +307,46 @@ export default function SettingsPage() {
                   </div>
                 </>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="data">
+          <Card>
+            <CardHeader>
+              <CardTitle>Demo Data</CardTitle>
+              <CardDescription>Add sample data to explore the platform features</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-muted/50 rounded-lg p-4">
+                <h4 className="font-medium mb-2">What will be added:</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• 5 sample customers with contact details</li>
+                  <li>• 8 products & services with pricing</li>
+                  <li>• 5 invoices (paid, pending, overdue)</li>
+                  <li>• 7 expense entries across categories</li>
+                </ul>
+              </div>
+              <Button 
+                onClick={() => seedData.mutate()} 
+                disabled={seedData.isPending}
+                className="w-full"
+              >
+                {seedData.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding Demo Data...
+                  </>
+                ) : (
+                  <>
+                    <Database className="mr-2 h-4 w-4" />
+                    Add Demo Data
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                Note: Running this multiple times will create duplicate entries
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

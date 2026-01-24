@@ -44,8 +44,11 @@ const eventTypeStyles: Record<string, string> = {
 
 export default function AuditLogsPage() {
   const [filter, setFilter] = useState<string>('all');
+  const [showLocalLogs, setShowLocalLogs] = useState(true);
   const { seedSecurityData, isSeeding } = useSeedSecurityData();
-  const { data: auditLogs, isLoading } = useQuery({
+  
+  // Fetch Supabase audit logs
+  const { data: supabaseAuditLogs, isLoading: isLoadingSupabase, refetch: refetchSupabase } = useQuery({
     queryKey: ['audit-logs', filter],
     queryFn: async () => {
       let query = supabase
@@ -64,11 +67,12 @@ export default function AuditLogsPage() {
     },
   });
 
-  // Also fetch local RxDB audit logs
-  const { data: localAuditLogs, refetch: refetchLocal } = useQuery({
-    queryKey: ['local-audit-logs'],
+  // Fetch local RxDB audit logs
+  const { data: localAuditLogs, isLoading: isLoadingLocal, refetch: refetchLocal } = useQuery({
+    queryKey: ['local-audit-logs', filter],
     queryFn: async () => {
-      return await getAuditLogs({ limit: 50 });
+      const filterAction = filter !== 'all' ? filter : undefined;
+      return await getAuditLogs({ action: filterAction, limit: 100 });
     },
   });
 
@@ -85,22 +89,43 @@ export default function AuditLogsPage() {
     },
   });
 
+  // Combine and normalize logs for display
+  const combinedLogs = [
+    ...(localAuditLogs || []).map(log => ({
+      id: log.id,
+      created_at: log.ts,
+      event_type: log.action,
+      entity_type: log.entity_type,
+      action: `${log.action} ${log.entity_type}`,
+      user_id: log.actor,
+      ip_address: null,
+      source: 'local' as const
+    })),
+    ...(supabaseAuditLogs || []).map(log => ({
+      ...log,
+      source: 'cloud' as const
+    }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const isLoading = isLoadingSupabase || isLoadingLocal;
+
   const handleSeedData = async () => {
     await seedSecurityData();
-    refetchLocal();
-    refetchSecurity();
+    // Refetch all data after seeding
+    await Promise.all([refetchLocal(), refetchSupabase(), refetchSecurity()]);
   };
 
   const handleExportLogs = () => {
-    if (!auditLogs?.length) {
+    if (!combinedLogs.length) {
       toast.error('No logs to export');
       return;
     }
 
     const csv = [
-      ['Timestamp', 'Event Type', 'Entity Type', 'Action', 'User ID', 'IP Address'].join(','),
-      ...auditLogs.map(log => [
+      ['Timestamp', 'Source', 'Event Type', 'Entity Type', 'Action', 'User ID', 'IP Address'].join(','),
+      ...combinedLogs.map(log => [
         log.created_at,
+        log.source,
         log.event_type,
         log.entity_type,
         log.action,
@@ -192,9 +217,9 @@ export default function AuditLogsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">
-                  {auditLogs?.filter(l => 
+                  {combinedLogs.filter(l => 
                     new Date(l.created_at).toDateString() === new Date().toDateString()
-                  ).length || 0}
+                  ).length}
                 </p>
               </CardContent>
             </Card>
@@ -206,7 +231,7 @@ export default function AuditLogsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold text-info">
-                  {auditLogs?.filter(l => l.event_type === 'login').length || 0}
+                  {combinedLogs.filter(l => l.event_type === 'login').length}
                 </p>
               </CardContent>
             </Card>
@@ -218,7 +243,7 @@ export default function AuditLogsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold text-warning">
-                  {auditLogs?.filter(l => ['create', 'update', 'delete'].includes(l.event_type)).length || 0}
+                  {combinedLogs.filter(l => ['create', 'update', 'delete'].includes(l.event_type)).length}
                 </p>
               </CardContent>
             </Card>
@@ -230,7 +255,7 @@ export default function AuditLogsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold text-primary">
-                  {auditLogs?.filter(l => l.event_type === 'export').length || 0}
+                  {combinedLogs.filter(l => l.event_type === 'export').length}
                 </p>
               </CardContent>
             </Card>
@@ -268,16 +293,20 @@ export default function AuditLogsPage() {
                     <div key={i} className="h-12 bg-muted rounded animate-pulse" />
                   ))}
                 </div>
-              ) : !auditLogs?.length ? (
+              ) : combinedLogs.length === 0 ? (
                 <div className="text-center py-12">
                   <Activity className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
                   <p className="text-muted-foreground">No audit logs found</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Click "Seed Demo Data" to populate sample entries
+                  </p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="table-header">Timestamp</TableHead>
+                      <TableHead className="table-header">Source</TableHead>
                       <TableHead className="table-header">Event</TableHead>
                       <TableHead className="table-header">Entity</TableHead>
                       <TableHead className="table-header">Action</TableHead>
@@ -285,10 +314,15 @@ export default function AuditLogsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {auditLogs.map((log) => (
+                    {combinedLogs.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell className="text-muted-foreground">
                           {format(new Date(log.created_at), 'dd MMM yyyy, HH:mm:ss')}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={log.source === 'local' ? 'secondary' : 'outline'} className="text-xs">
+                            {log.source === 'local' ? 'Local' : 'Cloud'}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge className={cn('badge-status capitalize', eventTypeStyles[log.event_type])}>

@@ -168,7 +168,8 @@ export const PAYMENT_CONFIG = {
   offlineDownloadPrice: 1499,
   currency: 'INR',
   upiId: 'pramudittiwari@axl',
-  merchantName: 'BizSuite'
+  merchantName: 'BizSuite',
+  supportEmail: 'parambuilds@proton.me'
 };
 
 export function generateUPILink(amount: number, txnNote: string): string {

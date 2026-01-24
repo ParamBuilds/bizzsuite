@@ -56,12 +56,12 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     setLoading(true);
 
-    // Fetch profile
+    // Fetch profile (use maybeSingle to handle case where profile doesn't exist yet)
     const { data: profileData } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (profileData) {
       setProfile(profileData as Profile);

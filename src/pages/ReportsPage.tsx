@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Download, TrendingUp, TrendingDown, DollarSign, Wallet, FileText, Users } from 'lucide-react';
+import { Download, TrendingUp, TrendingDown, IndianRupee, Wallet, FileText, Users } from 'lucide-react';
 import { format, subMonths, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { StatCard } from '@/components/dashboard/StatCard';
 
@@ -191,7 +191,7 @@ export default function ReportsPage() {
             <StatCard
               title="Total Revenue"
               value={`₹${(stats?.totalRevenue || 0).toLocaleString()}`}
-              icon={DollarSign}
+              icon={IndianRupee}
               variant="primary"
             />
             <StatCard
@@ -324,7 +324,7 @@ export default function ReportsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
                   <div className="p-3 rounded-lg bg-success/10 text-success">
-                    <DollarSign className="h-6 w-6" />
+                    <IndianRupee className="h-6 w-6" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Inventory Value</p>

@@ -12,7 +12,8 @@ import {
   notificationQueueSchema,
   subscriptionSchema,
   settingsSchema,
-  syncConflictSchema
+  syncConflictSchema,
+  evidenceVaultSchema
 } from './schemas';
 
 // Add RxDB plugins
@@ -31,6 +32,7 @@ export type OfflineDatabase = RxDatabase & {
   subscription: RxCollection;
   settings: RxCollection;
   sync_conflicts: RxCollection;
+  evidence_vault: RxCollection;
 };
 
 export async function getDatabase(): Promise<OfflineDatabase> {
@@ -71,6 +73,9 @@ export async function getDatabase(): Promise<OfflineDatabase> {
       },
       sync_conflicts: {
         schema: syncConflictSchema
+      },
+      evidence_vault: {
+        schema: evidenceVaultSchema
       }
     });
 

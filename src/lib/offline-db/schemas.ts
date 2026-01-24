@@ -182,3 +182,24 @@ export const syncConflictSchema: RxJsonSchema<any> = {
   },
   required: ['id', 'entity_type', 'entity_id']
 };
+
+export const evidenceVaultSchema: RxJsonSchema<any> = {
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+    id: { type: 'string', maxLength: 100 },
+    type: { type: 'string' },
+    title: { type: 'string' },
+    description: { type: 'string' },
+    hash: { type: 'string' },
+    timestamp: { type: 'string' },
+    origin: { type: 'string' },
+    linked_audit_ids: { type: 'string' },
+    metadata: { type: 'string' },
+    data: { type: ['string', 'null'] },
+    verified: { type: 'boolean' },
+    verified_at: { type: ['string', 'null'] }
+  },
+  required: ['id', 'type', 'title', 'hash', 'timestamp']
+};

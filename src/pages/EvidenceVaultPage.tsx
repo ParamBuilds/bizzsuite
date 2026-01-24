@@ -15,7 +15,8 @@ import {
   Clock,
   FileText,
   AlertTriangle,
-  Lock
+  Lock,
+  Database
 } from 'lucide-react';
 import { 
   getAllEvidence, 
@@ -25,6 +26,7 @@ import {
 } from '@/lib/evidence-vault';
 import { MotionContainer, MotionItem, PageWrapper } from '@/components/ui/motion';
 import { format } from 'date-fns';
+import { useSeedSecurityData } from '@/hooks/useSeedSecurityData';
 
 const typeIcons: Record<string, React.ReactNode> = {
   invoice: <FileText className="h-4 w-4" />,
@@ -53,6 +55,7 @@ export default function EvidenceVaultPage() {
     valid: number;
     invalid: number;
   } | null>(null);
+  const { seedSecurityData, isSeeding } = useSeedSecurityData();
 
   useEffect(() => {
     loadEntries();
@@ -101,6 +104,11 @@ export default function EvidenceVaultPage() {
     toast.success('Evidence vault exported to CSV');
   };
 
+  const handleSeedData = async () => {
+    await seedSecurityData();
+    loadEntries();
+  };
+
   return (
     <PageWrapper className="space-y-6">
       <MotionContainer>
@@ -123,6 +131,10 @@ export default function EvidenceVaultPage() {
               <Button variant="outline" onClick={handleExport}>
                 <Download className="mr-2 h-4 w-4" />
                 Export CSV
+              </Button>
+              <Button onClick={handleSeedData} disabled={isSeeding}>
+                <Database className="mr-2 h-4 w-4" />
+                {isSeeding ? 'Seeding...' : 'Seed Demo Data'}
               </Button>
             </div>
           </div>

@@ -19,12 +19,15 @@ import {
   AlertTriangle,
   Eye,
   FileText,
-  Activity
+  Activity,
+  Database
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageWrapper, MotionContainer, MotionItem } from '@/components/ui/motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useSeedSecurityData } from '@/hooks/useSeedSecurityData';
+import { getAuditLogs } from '@/lib/offline-db/audit-logger';
 
 const eventTypeStyles: Record<string, string> = {
   login: 'bg-info/10 text-info',
@@ -41,7 +44,7 @@ const eventTypeStyles: Record<string, string> = {
 
 export default function AuditLogsPage() {
   const [filter, setFilter] = useState<string>('all');
-
+  const { seedSecurityData, isSeeding } = useSeedSecurityData();
   const { data: auditLogs, isLoading } = useQuery({
     queryKey: ['audit-logs', filter],
     queryFn: async () => {
@@ -61,7 +64,15 @@ export default function AuditLogsPage() {
     },
   });
 
-  const { data: securityEvents } = useQuery({
+  // Also fetch local RxDB audit logs
+  const { data: localAuditLogs, refetch: refetchLocal } = useQuery({
+    queryKey: ['local-audit-logs'],
+    queryFn: async () => {
+      return await getAuditLogs({ limit: 50 });
+    },
+  });
+
+  const { data: securityEvents, refetch: refetchSecurity } = useQuery({
     queryKey: ['security-events'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -73,6 +84,12 @@ export default function AuditLogsPage() {
       return data;
     },
   });
+
+  const handleSeedData = async () => {
+    await seedSecurityData();
+    refetchLocal();
+    refetchSecurity();
+  };
 
   const handleExportLogs = () => {
     if (!auditLogs?.length) {
@@ -116,9 +133,13 @@ export default function AuditLogsPage() {
                 Immutable audit trail for compliance and security monitoring
               </p>
             </div>
-            <Button onClick={handleExportLogs}>
+            <Button onClick={handleExportLogs} variant="outline">
               <Download className="mr-2 h-4 w-4" />
               Export Logs (CSV)
+            </Button>
+            <Button onClick={handleSeedData} disabled={isSeeding}>
+              <Database className="mr-2 h-4 w-4" />
+              {isSeeding ? 'Seeding...' : 'Seed Demo Data'}
             </Button>
           </div>
         </MotionItem>

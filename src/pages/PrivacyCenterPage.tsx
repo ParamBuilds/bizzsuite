@@ -165,8 +165,8 @@ export default function PrivacyCenterPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <p><strong>Name:</strong> Data Protection Officer</p>
-                  <p><strong>Email:</strong> dpo@company.com</p>
+                  <p><strong>Name:</strong> ParamBuilds</p>
+                  <p><strong>Email:</strong> <a href="mailto:parambuilds@proton.me" className="text-primary hover:underline">parambuilds@proton.me</a></p>
                   <p><strong>Response Time:</strong> Within 30 days of receiving the complaint</p>
                 </CardContent>
               </Card>

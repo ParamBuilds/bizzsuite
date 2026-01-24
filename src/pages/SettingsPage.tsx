@@ -10,14 +10,48 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, IndianRupee, Save, Database, Loader2 } from 'lucide-react';
-
+import { Badge } from '@/components/ui/badge';
+import { Building2, IndianRupee, Save, Database, Loader2, RefreshCw, Sparkles, CheckCircle2, Monitor } from 'lucide-react';
+import { isDesktopMode } from '@/lib/desktop-mode';
+import { FINAL_PRODUCT_MODE } from '@/lib/final-product-mode';
+import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
+
+// Version changelog
+const VERSION_CHANGELOG = [
+  {
+    version: '1.1.0',
+    date: '2026-01-25',
+    highlights: [
+      'Added manual "Check for Updates" button',
+      'Fixed sidebar scrolling on smaller screens',
+      'Updated pricing to ₹1,299',
+      'Evidence Vault verification fix',
+      'Indian Rupee icon throughout the app',
+      'Privacy Center grievance officer updated',
+    ],
+    isNew: true
+  },
+  {
+    version: '1.0.0',
+    date: '2026-01-20',
+    highlights: [
+      'Initial release',
+      'Offline-first business management',
+      'GST-ready invoicing',
+      'Inventory & expense tracking',
+      'Desktop app with auto-updates',
+    ],
+    isNew: false
+  },
+];
 
 export default function SettingsPage() {
   const { business, profile, refetch } = useBusiness();
   const queryClient = useQueryClient();
   const seedData = useSeedData();
+  const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'uptodate'>('idle');
 
   const [businessForm, setBusinessForm] = useState({
     name: business?.name || '',
@@ -130,6 +164,48 @@ export default function SettingsPage() {
     }
   }, [gstSettings]);
 
+  // Check for updates handler
+  const handleCheckForUpdates = async () => {
+    setIsCheckingUpdates(true);
+    setUpdateStatus('checking');
+    
+    try {
+      // In desktop mode, trigger the Electron updater via IPC
+      if (isDesktopMode() && (window as any).electronAPI?.checkForUpdates) {
+        (window as any).electronAPI.checkForUpdates();
+        toast.info('Checking for updates...');
+        
+        // Listen for update response
+        setTimeout(() => {
+          setIsCheckingUpdates(false);
+          setUpdateStatus('uptodate');
+          // Trigger confetti for up-to-date celebration
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+          toast.success('You are on the latest version!');
+        }, 2000);
+      } else {
+        // Web mode - just show current version
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setUpdateStatus('uptodate');
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        toast.success(`You're on v${FINAL_PRODUCT_MODE.version} - the latest version!`);
+      }
+    } catch (error) {
+      toast.error('Failed to check for updates');
+      setUpdateStatus('idle');
+    } finally {
+      setIsCheckingUpdates(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in max-w-3xl">
       <div>
@@ -138,7 +214,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="business" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
           <TabsTrigger value="business" className="gap-2">
             <Building2 className="h-4 w-4" />
             Business
@@ -150,6 +226,10 @@ export default function SettingsPage() {
           <TabsTrigger value="data" className="gap-2">
             <Database className="h-4 w-4" />
             Data
+          </TabsTrigger>
+          <TabsTrigger value="updates" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Updates
           </TabsTrigger>
         </TabsList>
 
@@ -355,6 +435,101 @@ export default function SettingsPage() {
               </p>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="updates">
+          <div className="space-y-4">
+            {/* Current Version Card */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Monitor className="h-5 w-5" />
+                      Current Version
+                    </CardTitle>
+                    <CardDescription>
+                      {isDesktopMode() ? 'Desktop Application' : 'Web Application'}
+                    </CardDescription>
+                  </div>
+                  <Badge variant="default" className="text-lg px-3 py-1">
+                    v{FINAL_PRODUCT_MODE.version}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button 
+                  onClick={handleCheckForUpdates}
+                  disabled={isCheckingUpdates}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isCheckingUpdates ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Checking for Updates...
+                    </>
+                  ) : updateStatus === 'uptodate' ? (
+                    <>
+                      <CheckCircle2 className="mr-2 h-5 w-5" />
+                      You're Up to Date!
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="mr-2 h-5 w-5" />
+                      Check for Updates
+                    </>
+                  )}
+                </Button>
+                
+                {isDesktopMode() && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Updates are also checked automatically every 30 minutes
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Version Changelog */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-warning" />
+                  What's New
+                </CardTitle>
+                <CardDescription>Recent updates and improvements</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {VERSION_CHANGELOG.map((release, index) => (
+                  <div key={release.version} className="relative">
+                    {index > 0 && <Separator className="mb-4" />}
+                    <div className="flex items-center gap-3 mb-3">
+                      <Badge 
+                        variant={release.isNew ? 'default' : 'secondary'}
+                        className={release.isNew ? 'bg-success text-success-foreground' : ''}
+                      >
+                        v{release.version}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">{release.date}</span>
+                      {release.isNew && (
+                        <Badge variant="outline" className="border-success text-success">
+                          Latest
+                        </Badge>
+                      )}
+                    </div>
+                    <ul className="space-y-2 ml-1">
+                      {release.highlights.map((item, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

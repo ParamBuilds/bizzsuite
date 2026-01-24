@@ -94,12 +94,28 @@ ipcMain.handle('get-version', () => {
   return app.getVersion();
 });
 
-ipcMain.handle('check-for-updates', () => {
+// Listen for manual update check request
+ipcMain.on('check-for-updates', (event) => {
+  console.log('[BizSuite Desktop] Manual update check requested');
   if (autoUpdater) {
     autoUpdater.checkForUpdates();
-    return true;
   }
-  return false;
+});
+
+// Listen for download update request
+ipcMain.on('download-update', (event) => {
+  console.log('[BizSuite Desktop] Download update requested');
+  if (autoUpdater) {
+    autoUpdater.downloadUpdate();
+  }
+});
+
+// Listen for install update request
+ipcMain.on('install-update', (event) => {
+  console.log('[BizSuite Desktop] Install update requested');
+  if (autoUpdater) {
+    autoUpdater.installUpdate();
+  }
 });
 
 // App ready

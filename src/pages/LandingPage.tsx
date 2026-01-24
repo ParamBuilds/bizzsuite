@@ -294,7 +294,7 @@ export default function LandingPage() {
               </div>
               <p className="opacity-80 mb-4 text-sm">Download & own forever</p>
               <p className="text-4xl font-bold mb-2">
-                ₹1,499<span className="text-lg font-normal opacity-80"> one-time</span>
+                ₹1,299<span className="text-lg font-normal opacity-80"> one-time</span>
               </p>
               <ul className="space-y-3 my-6 flex-1">
                 {['Downloadable ZIP with installer', 'Works 100% offline', 'Lifetime license key', 'All features included', 'Pay via UPI (GPay/PhonePe)'].map((item) => (

@@ -56,6 +56,9 @@ export default function SettingsPage() {
 
   const updateBusinessMutation = useMutation({
     mutationFn: async () => {
+      if (!business?.id) {
+        throw new Error('Business not found. Please refresh and try again.');
+      }
       const { error } = await supabase
         .from('businesses')
         .update({
@@ -67,7 +70,7 @@ export default function SettingsPage() {
           gst_enabled: gstForm.gst_enabled,
           gstin: gstForm.gstin || null,
         })
-        .eq('id', business?.id);
+        .eq('id', business.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -79,8 +82,11 @@ export default function SettingsPage() {
 
   const updateGstSettingsMutation = useMutation({
     mutationFn: async () => {
+      if (!business?.id) {
+        throw new Error('Business not found. Please refresh and try again.');
+      }
       const { error } = await supabase.from('gst_settings').upsert({
-        business_id: business?.id,
+        business_id: business.id,
         gstin: gstForm.gstin || null,
         legal_name: gstSettingsForm.legal_name || null,
         trade_name: gstSettingsForm.trade_name || null,

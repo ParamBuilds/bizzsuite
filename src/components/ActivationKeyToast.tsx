@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Copy, Download, X, Key, CheckCircle2, Monitor, FileText, HelpCircle } from 'lucide-react';
+import { Copy, Download, X, CheckCircle2, Monitor, FileText, HelpCircle, AlertTriangle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { downloadLicenseZip } from '@/lib/license-download';
-import { downloadInstaller, getInstallerInfo, detectPlatform } from '@/lib/installer-download';
+import { downloadInstaller, downloadInstallGuide, getInstallerInfo, detectPlatform, INSTALLER_CONFIG } from '@/lib/installer-download';
 import { useNavigate } from 'react-router-dom';
 
 interface ActivationKeyToastProps {
@@ -33,8 +33,17 @@ export function ActivationKeyToast({ licenseKey, isVisible, onClose }: Activatio
   };
 
   const handleDownloadInstaller = () => {
-    downloadInstaller(platform === 'pwa' ? 'windows' : platform);
-    toast.success('Installer download started');
+    const success = downloadInstaller(platform === 'pwa' ? 'windows' : platform);
+    if (success) {
+      toast.success('Installer download started');
+    } else {
+      toast.error('Installer not available yet. Please contact support.');
+    }
+  };
+
+  const handleDownloadGuide = () => {
+    downloadInstallGuide();
+    toast.success('Install guide downloaded');
   };
 
   const handleDownloadLicense = () => {
@@ -89,13 +98,33 @@ export function ActivationKeyToast({ licenseKey, isVisible, onClose }: Activatio
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success text-success-foreground text-xs font-bold">1</span>
                   Download & Install the Software
                 </p>
-                <Button
-                  onClick={handleDownloadInstaller}
-                  className="w-full bg-success hover:bg-success/90 text-success-foreground"
-                >
-                  <Monitor className="mr-2 h-4 w-4" />
-                  Download Installer ({installer.platform})
-                </Button>
+                {installer.isAvailable ? (
+                  <Button
+                    onClick={handleDownloadInstaller}
+                    className="w-full bg-success hover:bg-success/90 text-success-foreground"
+                  >
+                    <Monitor className="mr-2 h-4 w-4" />
+                    Download Installer ({installer.fileName})
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-warning bg-warning/10 p-2 rounded border border-warning/20">
+                      <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                      <span>Installer not available yet. Please contact support.</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      asChild
+                    >
+                      <a href={`mailto:${INSTALLER_CONFIG.supportEmail}?subject=BizSuite%20Installer%20Request&body=Hi%2C%0A%0AI%20purchased%20BizSuite%20and%20need%20the%20installer.%0A%0AMy%20license%20key%3A%20${licenseKey}%0A%0A`}>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Contact Support
+                      </a>
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Step 2: Activation Key */}
@@ -138,6 +167,19 @@ export function ActivationKeyToast({ licenseKey, isVisible, onClose }: Activatio
                     License File
                   </Button>
                 </div>
+              </div>
+
+              {/* Optional: Install Guide */}
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleDownloadGuide}
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 text-muted-foreground"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Install Guide (optional)
+                </Button>
               </div>
 
               {/* Help Link */}

@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BusinessProvider } from "@/contexts/BusinessContext";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -19,6 +20,8 @@ import SettingsPage from "./pages/SettingsPage";
 import VendorsPage from "./pages/VendorsPage";
 import PrivacyCenterPage from "./pages/PrivacyCenterPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
+import PricingPage from "./pages/PricingPage";
+import HealthCheckPage from "./pages/HealthCheckPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,12 +32,14 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <OfflineBanner />
         <BrowserRouter>
           <AuthProvider>
             <BusinessProvider>
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/pricing" element={<PricingPage />} />
                 <Route element={<AppLayout />}>
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/customers" element={<CustomersPage />} />
@@ -45,6 +50,7 @@ const App = () => (
                   <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/privacy" element={<PrivacyCenterPage />} />
                   <Route path="/audit-logs" element={<AuditLogsPage />} />
+                  <Route path="/health" element={<HealthCheckPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />

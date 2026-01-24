@@ -168,7 +168,7 @@ export const PAYMENT_CONFIG = {
   monthlyPrice: 499,
   offlineDownloadPrice: 1499,
   currency: 'INR',
-  upiId: 'YOUR_UPI_ID@upi', // Replace with actual UPI ID
+  upiId: 'pramudittiwari@axl',
   merchantName: 'BizSuite'
 };
 

@@ -4,11 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Building2, Mail, Lock, User, ArrowRight, Zap, Shield, BarChart3, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { motion } from 'framer-motion';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -19,10 +20,17 @@ const signupSchema = loginSchema.extend({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
 });
 
+const features = [
+  { icon: Zap, text: 'Lightning-fast invoicing' },
+  { icon: Shield, text: 'Bank-grade security' },
+  { icon: BarChart3, text: 'Real-time analytics' },
+];
+
 export default function AuthPage() {
   const { user, loading, signIn, signUp } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState('login');
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ fullName: '', email: '', password: '' });
@@ -30,7 +38,11 @@ export default function AuthPage() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" 
+        />
       </div>
     );
   }
@@ -94,131 +106,222 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-8 animate-fade-in">
-        {/* Logo */}
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-xl gradient-primary shadow-lg mb-4">
-            <Building2 className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <h1 className="font-display text-3xl font-bold">BizSuite</h1>
-          <p className="text-muted-foreground mt-2">Business management made simple</p>
+    <div className="min-h-screen flex relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        {/* Animated gradient mesh */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-xl animate-blob" />
+          <div className="absolute top-0 -right-4 w-72 h-72 bg-accent/30 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-success/20 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000" />
         </div>
+        
+        {/* Grid pattern overlay */}
+        <div 
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='%23000'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e")`,
+          }}
+        />
+      </div>
 
-        <Card className="border-border/50 shadow-lg">
-          <Tabs defaultValue="login" className="w-full">
-            <CardHeader className="pb-0">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-            </CardHeader>
+      {/* Left Side - Branding (Hidden on mobile) */}
+      <motion.div 
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        className="hidden lg:flex lg:w-1/2 flex-col justify-center px-12 xl:px-20 relative z-10"
+      >
+        <div className="max-w-md">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-primary shadow-lg">
+              <Building2 className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <h1 className="font-display text-3xl font-bold text-foreground">BizSuite</h1>
+          </div>
+          
+          <h2 className="text-4xl font-bold text-foreground mb-4 leading-tight">
+            Enterprise-grade business management for India
+          </h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Manage invoices, inventory, expenses, and customers with India's most complete offline-first business suite.
+          </p>
+          
+          <ul className="space-y-4">
+            {features.map((feature, i) => (
+              <motion.li 
+                key={feature.text}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
+                className="flex items-center gap-3"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <feature.icon className="h-5 w-5 text-primary" />
+                </div>
+                <span className="text-foreground font-medium">{feature.text}</span>
+              </motion.li>
+            ))}
+          </ul>
+          
+          <div className="mt-12 pt-8 border-t border-border/50">
+            <p className="text-sm text-muted-foreground">
+              Trusted by <span className="font-semibold text-foreground">10,000+</span> Indian businesses
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
-            <CardContent className="pt-6">
-              <TabsContent value="login" className="mt-0">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="you@company.com"
-                        value={loginForm.email}
-                        onChange={(e) => setLoginForm(f => ({ ...f, email: e.target.value }))}
-                        className="pl-10"
-                      />
+      {/* Right Side - Auth Form */}
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-8 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="inline-flex items-center justify-center h-14 w-14 rounded-xl gradient-primary shadow-lg mb-4">
+              <Building2 className="h-7 w-7 text-primary-foreground" />
+            </div>
+            <h1 className="font-display text-3xl font-bold text-foreground">BizSuite</h1>
+          </div>
+
+          {/* Glassmorphism Card */}
+          <Card className="backdrop-blur-xl bg-card/80 border-border/50 shadow-2xl">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <div className="px-6 pt-6">
+                <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+                  <TabsTrigger value="login" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                    Sign In
+                  </TabsTrigger>
+                  <TabsTrigger value="signup" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                    Sign Up
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <CardContent className="pt-6 px-6 pb-6">
+                <TabsContent value="login" className="mt-0 space-y-4">
+                  <motion.form 
+                    key="login-form"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    onSubmit={handleLogin} 
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="login-email"
+                          type="email"
+                          placeholder="you@company.com"
+                          value={loginForm.email}
+                          onChange={(e) => setLoginForm(f => ({ ...f, email: e.target.value }))}
+                          className="pl-10 bg-background/50"
+                        />
+                      </div>
+                      {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                     </div>
-                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={loginForm.password}
-                        onChange={(e) => setLoginForm(f => ({ ...f, password: e.target.value }))}
-                        className="pl-10"
-                      />
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="login-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={loginForm.password}
+                          onChange={(e) => setLoginForm(f => ({ ...f, password: e.target.value }))}
+                          className="pl-10 bg-background/50"
+                        />
+                      </div>
+                      {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                     </div>
-                    {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                  </div>
 
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Signing in...' : 'Sign In'}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </form>
-              </TabsContent>
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? 'Signing in...' : 'Sign In'}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </motion.form>
+                </TabsContent>
 
-              <TabsContent value="signup" className="mt-0">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        placeholder="John Doe"
-                        value={signupForm.fullName}
-                        onChange={(e) => setSignupForm(f => ({ ...f, fullName: e.target.value }))}
-                        className="pl-10"
-                      />
+                <TabsContent value="signup" className="mt-0 space-y-4">
+                  <motion.form 
+                    key="signup-form"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    onSubmit={handleSignup} 
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Full Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-name"
+                          type="text"
+                          placeholder="John Doe"
+                          value={signupForm.fullName}
+                          onChange={(e) => setSignupForm(f => ({ ...f, fullName: e.target.value }))}
+                          className="pl-10 bg-background/50"
+                        />
+                      </div>
+                      {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
                     </div>
-                    {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="you@company.com"
-                        value={signupForm.email}
-                        onChange={(e) => setSignupForm(f => ({ ...f, email: e.target.value }))}
-                        className="pl-10"
-                      />
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          placeholder="you@company.com"
+                          value={signupForm.email}
+                          onChange={(e) => setSignupForm(f => ({ ...f, email: e.target.value }))}
+                          className="pl-10 bg-background/50"
+                        />
+                      </div>
+                      {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                     </div>
-                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={signupForm.password}
-                        onChange={(e) => setSignupForm(f => ({ ...f, password: e.target.value }))}
-                        className="pl-10"
-                      />
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={signupForm.password}
+                          onChange={(e) => setSignupForm(f => ({ ...f, password: e.target.value }))}
+                          className="pl-10 bg-background/50"
+                        />
+                      </div>
+                      {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                     </div>
-                    {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                  </div>
 
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating account...' : 'Create Account'}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </form>
-              </TabsContent>
-            </CardContent>
-          </Tabs>
-        </Card>
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? 'Creating account...' : 'Create Account'}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </motion.form>
+                </TabsContent>
+              </CardContent>
+            </Tabs>
+          </Card>
 
-        <p className="text-center text-sm text-muted-foreground">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
+        </motion.div>
       </div>
     </div>
   );

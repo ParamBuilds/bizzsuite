@@ -93,9 +93,12 @@ export default function InventoryPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: ProductForm) => {
+      if (!business?.id) {
+        throw new Error('Business not found. Please refresh and try again.');
+      }
       const { error } = await supabase.from('products_or_services').insert({
         ...data,
-        business_id: business?.id,
+        business_id: business.id,
         unit_price: parseFloat(data.unit_price) || 0,
         cost_price: parseFloat(data.cost_price) || 0,
         stock_quantity: parseInt(data.stock_quantity) || 0,

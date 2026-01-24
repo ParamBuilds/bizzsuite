@@ -95,9 +95,12 @@ export default function ExpensesPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: ExpenseForm) => {
+      if (!business?.id) {
+        throw new Error('Business not found. Please refresh and try again.');
+      }
       const { error } = await supabase.from('expenses').insert({
         ...data,
-        business_id: business?.id,
+        business_id: business.id,
         amount: parseFloat(data.amount) || 0,
       });
       if (error) throw error;

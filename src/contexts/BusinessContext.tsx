@@ -56,28 +56,89 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     setLoading(true);
 
-    // Fetch profile (use maybeSingle to handle case where profile doesn't exist yet)
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    try {
+      // Fetch profile (use maybeSingle to handle case where profile doesn't exist yet)
+      let { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    if (profileData) {
+      // If no profile exists, create one with a new business
+      if (!profileData) {
+        console.log('No profile found, creating business and profile for user');
+        
+        // Create a new business
+        const { data: newBusiness, error: bizError } = await supabase
+          .from('businesses')
+          .insert({ name: 'My Business' })
+          .select()
+          .single();
+
+        if (bizError) {
+          console.error('Error creating business:', bizError);
+          setLoading(false);
+          return;
+        }
+
+        // Create profile linked to the new business
+        const { data: newProfile, error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            business_id: newBusiness.id,
+            full_name: user.email?.split('@')[0] || 'User',
+            role: 'owner'
+          })
+          .select()
+          .single();
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          setLoading(false);
+          return;
+        }
+
+        profileData = newProfile;
+        setBusiness(newBusiness as Business);
+        setProfile(newProfile as Profile);
+        setLoading(false);
+        return;
+      }
+
       setProfile(profileData as Profile);
 
-      // Fetch business
+      // Fetch business if profile has business_id
       if (profileData.business_id) {
         const { data: businessData } = await supabase
           .from('businesses')
           .select('*')
           .eq('id', profileData.business_id)
-          .single();
+          .maybeSingle();
 
         if (businessData) {
           setBusiness(businessData as Business);
         }
+      } else {
+        // Profile exists but no business - create one
+        const { data: newBusiness, error: bizError } = await supabase
+          .from('businesses')
+          .insert({ name: 'My Business' })
+          .select()
+          .single();
+
+        if (!bizError && newBusiness) {
+          // Update profile with new business_id
+          await supabase
+            .from('profiles')
+            .update({ business_id: newBusiness.id })
+            .eq('user_id', user.id);
+
+          setBusiness(newBusiness as Business);
+        }
       }
+    } catch (error) {
+      console.error('Error in fetchData:', error);
     }
 
     setLoading(false);

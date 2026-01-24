@@ -50,23 +50,35 @@ export default function PricingPage() {
   };
 
   const handlePayment = () => {
-    const link = generateOfflineDownloadPaymentLink();
-    
-    // Check if on mobile device
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-      // On mobile, try to open UPI intent directly
-      window.location.href = link;
-    }
-    
-    // Always show payment instructions (for desktop or as fallback on mobile)
+    // Always show instructions first (reliable across desktop/PWA/webviews)
     setShowPaymentInstructions(true);
+
+    toast.info('Follow the payment steps below to complete your UPI payment.');
+
+    // Scroll the instructions into view
+    window.setTimeout(() => {
+      document.getElementById('payment-instructions')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 0);
   };
 
   const copyUPIId = () => {
     navigator.clipboard.writeText(PAYMENT_CONFIG.upiId);
     toast.success('UPI ID copied to clipboard');
+  };
+
+  const copyUPILink = () => {
+    const link = generateOfflineDownloadPaymentLink();
+    navigator.clipboard.writeText(link);
+    toast.success('UPI payment link copied');
+  };
+
+  const openUPIApp = () => {
+    const link = generateOfflineDownloadPaymentLink();
+    // This will work on mobile devices with UPI apps installed.
+    window.location.href = link;
   };
 
   return (
@@ -177,7 +189,7 @@ export default function PricingPage() {
 
         {/* Payment Instructions */}
         {showPaymentInstructions && (
-          <MotionItem>
+          <div id="payment-instructions">
             <Card className="bg-muted/50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -187,8 +199,17 @@ export default function PricingPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  If the UPI app didn't open automatically, you can pay manually:
+                  Use the options below to pay via UPI:
                 </p>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button onClick={openUPIApp} className="w-full" type="button">
+                    Open UPI App
+                  </Button>
+                  <Button onClick={copyUPILink} variant="secondary" className="w-full" type="button">
+                    Copy UPI Link
+                  </Button>
+                </div>
                 
                 <div className="flex items-center gap-2 p-4 bg-background rounded-lg border">
                   <span className="font-mono text-lg flex-1">{PAYMENT_CONFIG.upiId}</span>
@@ -212,7 +233,7 @@ export default function PricingPage() {
                 </div>
               </CardContent>
             </Card>
-          </MotionItem>
+          </div>
         )}
 
         {/* License Activation */}

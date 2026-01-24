@@ -10,9 +10,13 @@ import {
   Shield,
   Zap,
   Globe,
-  CheckCircle2
+  CheckCircle2,
+  Download,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Button } from '@/components/ui/button';
 
 const features = [
   {
@@ -41,19 +45,19 @@ const features = [
     description: 'Categorize expenses, track spending, and maintain financial clarity.',
   },
   {
-    icon: BarChart3,
-    title: 'Detailed Reports',
-    description: 'Generate comprehensive reports with CSV export for analysis.',
+    icon: Shield,
+    title: 'Compliance Ready',
+    description: 'Built-in audit logs, DPDP compliance tools, and GST-ready reports.',
   },
 ];
 
 const benefits = [
-  'No complex setup required',
+  'Works completely offline',
   'India-friendly GST support',
   'Mobile responsive design',
   'Dark mode for comfort',
-  'Secure data with RLS',
-  'Real-time updates',
+  'Immutable audit logs',
+  'Privacy & DPDP compliant',
 ];
 
 const staggerContainer = {
@@ -96,7 +100,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <HeroSection
         heading="Run Your Business Smarter"
-        tagline="All-in-one platform for invoicing, inventory, expenses, and customer management. Built for Indian SMBs."
+        tagline="All-in-one platform for invoicing, inventory, expenses, and customer management. Built for Indian SMBs. Works offline."
         buttonText="Start Free Trial"
         navItems={navItems}
         onButtonClick={() => navigate('/auth')}
@@ -135,14 +139,15 @@ export default function LandingPage() {
               <motion.div
                 key={feature.title}
                 variants={fadeInUp}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className="p-6 rounded-xl bg-card border border-border/50 shadow-card hover:shadow-lg transition-shadow"
+                whileHover={{ y: -8, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="group p-6 rounded-xl bg-card border border-border/50 shadow-card hover:shadow-xl hover:border-primary/20 transition-all duration-300"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
                   <feature.icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-1">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{feature.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -167,7 +172,7 @@ export default function LandingPage() {
                 Built for Real Businesses
               </motion.h2>
               <motion.p variants={fadeInUp} className="text-lg text-muted-foreground mb-8">
-                We understand the challenges of running a business in India. That's why BizSuite is designed to be simple, powerful, and affordable.
+                We understand the challenges of running a business in India. That's why BizSuite is designed to be simple, powerful, and works even without internet.
               </motion.p>
               
               <motion.ul variants={staggerContainer} className="space-y-4">
@@ -205,7 +210,8 @@ export default function LandingPage() {
                       whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
                       transition={{ delay: 0.1 * i, duration: 0.4 }}
-                      className="p-4 rounded-xl bg-card shadow-lg border border-border/50"
+                      whileHover={{ scale: 1.05, y: -4 }}
+                      className="p-4 rounded-xl bg-card shadow-lg border border-border/50 hover:shadow-xl transition-all duration-300"
                     >
                       <div className={`h-2 w-12 ${stat.color} rounded-full mb-3`} />
                       <p className="text-2xl font-bold text-foreground">{stat.value}</p>
@@ -221,7 +227,7 @@ export default function LandingPage() {
 
       {/* Pricing Section */}
       <section id="pricing" className="py-20 px-4 md:px-8 bg-muted/30">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -237,7 +243,7 @@ export default function LandingPage() {
               Simple, Transparent Pricing
             </motion.h2>
             <motion.p variants={fadeInUp} className="text-lg text-muted-foreground">
-              Start free, upgrade when you're ready.
+              Start free, upgrade when you're ready. No hidden fees.
             </motion.p>
           </motion.div>
 
@@ -246,56 +252,96 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="grid md:grid-cols-2 gap-6"
+            className="grid md:grid-cols-3 gap-6"
           >
-            {/* Free Tier */}
-            <div className="p-8 rounded-2xl bg-card border border-border/50 shadow-card">
-              <h3 className="text-xl font-semibold text-foreground mb-2">Starter</h3>
-              <p className="text-muted-foreground mb-4">Perfect for getting started</p>
-              <p className="text-4xl font-bold text-foreground mb-6">
-                ₹0<span className="text-lg font-normal text-muted-foreground">/month</span>
+            {/* Free Trial */}
+            <motion.div 
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="flex flex-col p-6 rounded-2xl bg-card border border-border/50 shadow-card hover:shadow-xl transition-all duration-300"
+            >
+              <h3 className="text-xl font-semibold text-foreground mb-2">Free Trial</h3>
+              <p className="text-muted-foreground mb-4 text-sm">Get started with all features</p>
+              <p className="text-4xl font-bold text-foreground mb-2">
+                ₹0<span className="text-lg font-normal text-muted-foreground">/14 days</span>
               </p>
-              <ul className="space-y-3 mb-8">
-                {['Up to 50 invoices/month', 'Basic reports', '1 user', 'Email support'].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-muted-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-success" />
-                    {item}
+              <ul className="space-y-3 my-6 flex-1">
+                {['All features unlocked', 'No credit card required', 'Full offline access', 'Email support'].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
+                    <span className="line-clamp-1">{item}</span>
                   </li>
                 ))}
               </ul>
-              <button
+              <Button
                 onClick={() => navigate('/auth')}
-                className="w-full py-3 px-6 rounded-lg border border-border text-foreground font-medium hover:bg-muted transition-colors"
+                variant="outline"
+                className="w-full mt-auto"
               >
-                Get Started Free
-              </button>
-            </div>
+                Start Free Trial
+              </Button>
+            </motion.div>
 
-            {/* Pro Tier */}
-            <div className="p-8 rounded-2xl bg-primary text-primary-foreground shadow-lg relative overflow-hidden">
-              <div className="absolute top-4 right-4 px-3 py-1 bg-white/20 rounded-full text-xs font-medium">
+            {/* Monthly Subscription - Featured */}
+            <motion.div 
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="flex flex-col p-6 rounded-2xl bg-primary text-primary-foreground shadow-xl relative overflow-hidden"
+            >
+              <div className="absolute top-4 right-4 px-3 py-1 bg-white/20 rounded-full text-xs font-medium backdrop-blur-sm">
                 Popular
               </div>
-              <h3 className="text-xl font-semibold mb-2">Professional</h3>
-              <p className="opacity-80 mb-4">For growing businesses</p>
-              <p className="text-4xl font-bold mb-6">
-                ₹999<span className="text-lg font-normal opacity-80">/month</span>
+              <div className="flex items-center gap-2 mb-2">
+                <Wifi className="h-5 w-5" />
+                <h3 className="text-xl font-semibold">Business Plan</h3>
+              </div>
+              <p className="opacity-80 mb-4 text-sm">Full access with cloud sync</p>
+              <p className="text-4xl font-bold mb-2">
+                ₹499<span className="text-lg font-normal opacity-80">/month</span>
               </p>
-              <ul className="space-y-3 mb-8">
-                {['Unlimited invoices', 'Advanced reports & export', 'Up to 5 users', 'Priority support', 'WhatsApp integration'].map((item) => (
-                  <li key={item} className="flex items-center gap-2 opacity-90">
-                    <CheckCircle2 className="h-4 w-4" />
-                    {item}
+              <ul className="space-y-3 my-6 flex-1">
+                {['Unlimited invoices & reports', 'Cloud sync & backup', 'Multi-user access', 'Priority support', 'Email notifications'].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm opacity-90">
+                    <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                    <span className="line-clamp-1">{item}</span>
                   </li>
                 ))}
               </ul>
-              <button
+              <Button
                 onClick={() => navigate('/auth')}
-                className="w-full py-3 px-6 rounded-lg bg-white text-primary font-medium hover:bg-white/90 transition-colors"
+                className="w-full bg-white text-primary hover:bg-white/90 mt-auto"
               >
-                Start 14-Day Trial
-              </button>
-            </div>
+                Subscribe Now
+              </Button>
+            </motion.div>
+
+            {/* Offline Download */}
+            <motion.div 
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="flex flex-col p-6 rounded-2xl bg-card border-2 border-accent/50 shadow-card hover:shadow-xl transition-all duration-300"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <WifiOff className="h-5 w-5 text-accent" />
+                <h3 className="text-xl font-semibold text-foreground">Offline Forever</h3>
+              </div>
+              <p className="text-muted-foreground mb-4 text-sm">Download & own forever</p>
+              <p className="text-4xl font-bold text-foreground mb-2">
+                ₹1,499<span className="text-lg font-normal text-muted-foreground"> one-time</span>
+              </p>
+              <ul className="space-y-3 my-6 flex-1">
+                {['Downloadable installer', 'Works 100% offline', 'Lifetime license', 'No recurring fees', 'Local data only'].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Download className="h-4 w-4 text-accent flex-shrink-0" />
+                    <span className="line-clamp-1">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                onClick={() => navigate('/pricing')}
+                variant="outline"
+                className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground mt-auto"
+              >
+                Buy Offline Version
+              </Button>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -328,8 +374,13 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="py-8 px-4 border-t border-border">
-        <div className="max-w-6xl mx-auto text-center text-muted-foreground">
-          <p>© 2024 BizSuite. Built with ❤️ for Indian SMBs.</p>
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center text-muted-foreground space-y-2">
+            <p>© 2024 BizSuite. Built with ❤️ for Indian SMBs.</p>
+            <p className="text-xs">
+              This software provides compliance tooling and does not constitute legal advice. Not affiliated with Government of India.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

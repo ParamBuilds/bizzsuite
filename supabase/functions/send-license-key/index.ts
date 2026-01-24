@@ -10,7 +10,8 @@ const corsHeaders = {
 };
 
 interface SendLicenseRequest {
-  userId: string;
+  userId?: string;
+  email?: string;
   licenseKey?: string;
 }
 
@@ -39,44 +40,52 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { userId, licenseKey: providedKey }: SendLicenseRequest = await req.json();
+    const { userId, email: directEmail, licenseKey: providedKey }: SendLicenseRequest = await req.json();
     
-    if (!userId) {
-      console.error("Missing userId");
+    if (!userId && !directEmail) {
+      console.error("Missing userId or email");
       return new Response(
-        JSON.stringify({ error: "userId is required" }),
+        JSON.stringify({ error: "userId or email is required" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    console.log("Looking up user:", userId);
+    let userEmail: string;
 
-    // Create Supabase client with service role
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // If direct email is provided, use it directly
+    if (directEmail) {
+      userEmail = directEmail;
+      console.log("Using direct email:", userEmail);
+    } else {
+      console.log("Looking up user:", userId);
 
-    // Get user email from auth.users
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
-    
-    if (userError || !userData?.user) {
-      console.error("User not found:", userError);
-      return new Response(
-        JSON.stringify({ error: "User not found" }),
-        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      // Create Supabase client with service role
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+      // Get user email from auth.users
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId!);
+      
+      if (userError || !userData?.user) {
+        console.error("User not found:", userError);
+        return new Response(
+          JSON.stringify({ error: "User not found" }),
+          { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      userEmail = userData.user.email!;
+      if (!userEmail) {
+        console.error("User has no email");
+        return new Response(
+          JSON.stringify({ error: "User has no email address" }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
     }
 
-    const userEmail = userData.user.email;
-    if (!userEmail) {
-      console.error("User has no email");
-      return new Response(
-        JSON.stringify({ error: "User has no email address" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    console.log("Found user email:", userEmail);
+    console.log("Sending to email:", userEmail);
 
     // Generate or use provided license key
     const licenseKey = providedKey || generateLicenseKey();

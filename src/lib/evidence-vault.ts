@@ -39,7 +39,9 @@ export async function addEvidence(entry: Omit<EvidenceEntry, 'id' | 'hash' | 'ti
   const id = generateEvidenceId();
   const timestamp = new Date().toISOString();
   
-  // Create hash from content
+  // Create hash from content - normalize data to null if undefined
+  const normalizedData = entry.data === undefined ? null : entry.data;
+  
   const contentToHash = JSON.stringify({
     type: entry.type,
     title: entry.title,
@@ -47,7 +49,7 @@ export async function addEvidence(entry: Omit<EvidenceEntry, 'id' | 'hash' | 'ti
     origin: entry.origin,
     linkedAuditIds: entry.linkedAuditIds,
     metadata: entry.metadata,
-    data: entry.data,
+    data: normalizedData,
     timestamp
   });
   
@@ -107,6 +109,9 @@ export async function getAllEvidence(): Promise<EvidenceEntry[]> {
 
 // Verify evidence integrity
 export async function verifyEvidence(entry: EvidenceEntry): Promise<{ valid: boolean; message: string }> {
+  // Normalize data to match how it was stored (null vs undefined handling)
+  const normalizedData = entry.data === undefined ? null : entry.data;
+  
   const contentToHash = JSON.stringify({
     type: entry.type,
     title: entry.title,
@@ -114,7 +119,7 @@ export async function verifyEvidence(entry: EvidenceEntry): Promise<{ valid: boo
     origin: entry.origin,
     linkedAuditIds: entry.linkedAuditIds,
     metadata: entry.metadata,
-    data: entry.data,
+    data: normalizedData,
     timestamp: entry.timestamp
   });
   

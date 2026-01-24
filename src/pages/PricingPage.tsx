@@ -359,29 +359,55 @@ export default function PricingPage() {
                 </div>
 
                 {/* Primary Download Button */}
-                <Button 
-                  size="lg"
-                  className="w-full bg-success hover:bg-success/90 text-success-foreground"
-                  onClick={() => {
-                    const platform = detectPlatform();
-                    downloadInstaller(platform === 'pwa' ? 'windows' : platform);
-                    toast.success('Installer download started');
-                  }}
-                >
-                  <Download className="mr-2 h-5 w-5" />
-                  Download Installer ({getInstallerInfo().fileName})
-                </Button>
+                {getInstallerInfo().isAvailable ? (
+                  <Button 
+                    size="lg"
+                    className="w-full bg-success hover:bg-success/90 text-success-foreground"
+                    onClick={() => {
+                      const platform = detectPlatform();
+                      const success = downloadInstaller(platform === 'pwa' ? 'windows' : platform);
+                      if (success) {
+                        toast.success('Installer download started');
+                      } else {
+                        toast.error('Download failed. Please try again.');
+                      }
+                    }}
+                  >
+                    <Download className="mr-2 h-5 w-5" />
+                    Download Installer ({getInstallerInfo().fileName})
+                  </Button>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-warning bg-warning/10 p-3 rounded-lg border border-warning/20">
+                      <HelpCircle className="h-5 w-5 flex-shrink-0" />
+                      <span>Installer not available yet. Please contact support or try again later.</span>
+                    </div>
+                    <Button 
+                      size="lg"
+                      variant="outline"
+                      className="w-full"
+                      asChild
+                    >
+                      <a href={`mailto:parambuilds@proton.me?subject=BizSuite%20Installer%20Request&body=Hi%2C%0A%0AI%20purchased%20BizSuite%20and%20need%20the%20installer.%0A%0AMy%20license%20key%3A%20${subscription?.licenseKey || 'Not available'}%0A%0A`}>
+                        <Mail className="mr-2 h-5 w-5" />
+                        Contact Support for Installer
+                      </a>
+                    </Button>
+                  </div>
+                )}
 
                 {/* Other Platforms */}
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {getAllInstallers().map((installer) => (
+                  {getAllInstallers().filter(i => i.isAvailable).map((installer) => (
                     <Button
                       key={installer.platform}
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        downloadInstaller(installer.platform);
-                        toast.success(`${installer.platform} installer download started`);
+                        const success = downloadInstaller(installer.platform);
+                        if (success) {
+                          toast.success(`${installer.platform} installer download started`);
+                        }
                       }}
                     >
                       {installer.platform.charAt(0).toUpperCase() + installer.platform.slice(1)}

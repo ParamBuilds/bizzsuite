@@ -3,12 +3,35 @@
 
 import { FINAL_PRODUCT_MODE } from './final-product-mode';
 
+// Configurable installer URLs - set these in production
+// These can be updated to point to actual hosted installers
+export const INSTALLER_CONFIG = {
+  windows: {
+    url: '', // Set to actual URL like 'https://cdn.example.com/BizSuite-Setup-v1.0.0.exe'
+    fileName: 'BizSuite-Setup.exe',
+    size: '85 MB',
+  },
+  mac: {
+    url: '', // Set to actual URL like 'https://cdn.example.com/BizSuite-v1.0.0.dmg'
+    fileName: 'BizSuite.dmg',
+    size: '92 MB',
+  },
+  linux: {
+    url: '', // Set to actual URL like 'https://cdn.example.com/BizSuite-v1.0.0.AppImage'
+    fileName: 'BizSuite.AppImage',
+    size: '88 MB',
+  },
+  // Support email for when installers are unavailable
+  supportEmail: 'parambuilds@proton.me',
+};
+
 export interface InstallerInfo {
   version: string;
   fileName: string;
   platform: 'windows' | 'mac' | 'linux' | 'pwa';
   size: string;
   downloadUrl: string;
+  isAvailable: boolean;
 }
 
 // Detect current platform
@@ -22,43 +45,29 @@ export function detectPlatform(): 'windows' | 'mac' | 'linux' | 'pwa' {
   return 'pwa';
 }
 
+// Check if an installer is available for a platform
+export function isInstallerAvailable(platform: 'windows' | 'mac' | 'linux'): boolean {
+  const config = INSTALLER_CONFIG[platform];
+  return Boolean(config?.url && config.url.trim() !== '' && config.url !== '#');
+}
+
 // Get installer info for each platform
 export function getInstallerInfo(platform?: 'windows' | 'mac' | 'linux' | 'pwa'): InstallerInfo {
   const currentPlatform = platform || detectPlatform();
   const version = FINAL_PRODUCT_MODE.version;
   
-  const installers: Record<string, InstallerInfo> = {
-    windows: {
-      version,
-      fileName: `BizSuite-Setup-v${version}.exe`,
-      platform: 'windows',
-      size: '85 MB',
-      downloadUrl: '#' // In production, this would be the actual download URL
-    },
-    mac: {
-      version,
-      fileName: `BizSuite-v${version}.dmg`,
-      platform: 'mac',
-      size: '92 MB',
-      downloadUrl: '#'
-    },
-    linux: {
-      version,
-      fileName: `BizSuite-v${version}.AppImage`,
-      platform: 'linux',
-      size: '88 MB',
-      downloadUrl: '#'
-    },
-    pwa: {
-      version,
-      fileName: 'Progressive Web App',
-      platform: 'pwa',
-      size: 'Install from browser',
-      downloadUrl: '#'
-    }
-  };
+  // For PWA, default to windows installer info
+  const targetPlatform = currentPlatform === 'pwa' ? 'windows' : currentPlatform;
+  const config = INSTALLER_CONFIG[targetPlatform];
   
-  return installers[currentPlatform];
+  return {
+    version,
+    fileName: config.fileName.replace('.', `-v${version}.`),
+    platform: currentPlatform,
+    size: config.size,
+    downloadUrl: config.url,
+    isAvailable: isInstallerAvailable(targetPlatform),
+  };
 }
 
 // Get all available installers
@@ -70,44 +79,73 @@ export function getAllInstallers(): InstallerInfo[] {
   ];
 }
 
-// Simulate installer download (in production, this would trigger actual download)
-export function downloadInstaller(platform?: 'windows' | 'mac' | 'linux' | 'pwa'): void {
-  // Convert pwa to windows as default
+// Download the actual installer file
+export function downloadInstaller(platform?: 'windows' | 'mac' | 'linux' | 'pwa'): boolean {
   const targetPlatform = platform === 'pwa' ? 'windows' : (platform || 'windows');
   const installer = getInstallerInfo(targetPlatform);
   
-  // In production, this would redirect to actual download URL
-  // For now, we create a placeholder file to demonstrate the flow
-  const placeholderContent = `
-BizSuite Offline Installer
-===========================
-Version: ${installer.version}
-Platform: ${installer.platform}
-File: ${installer.fileName}
+  // If real installer URL is available, redirect to it
+  if (installer.isAvailable && installer.downloadUrl) {
+    window.open(installer.downloadUrl, '_blank');
+    return true;
+  }
+  
+  // Installer not available - return false to trigger fallback UI
+  return false;
+}
 
-This is a placeholder for the actual installer.
+// Download the installation guide as a text file (secondary action)
+export function downloadInstallGuide(): void {
+  const version = FINAL_PRODUCT_MODE.version;
+  
+  const guideContent = `
+BizSuite Installation Guide
+============================
+Version: ${version}
 
-In production, this download would provide:
-- Full offline application
-- Native installer for your operating system
-- No internet required after installation
+INSTALLATION STEPS
+------------------
 
-Installation Steps:
-1. Run the downloaded installer
-2. Follow the installation wizard
-3. Open BizSuite from your applications
-4. Enter your activation key when prompted
+Step 1: Download the Installer
+   - Download the installer for your operating system
+   - Windows: BizSuite-Setup-v${version}.exe
+   - Mac: BizSuite-v${version}.dmg
+   - Linux: BizSuite-v${version}.AppImage
 
-Your app will work 100% offline after activation.
+Step 2: Install the Software
+   - Windows: Double-click the .exe file and follow the wizard
+   - Mac: Open the .dmg file and drag BizSuite to Applications
+   - Linux: Make the AppImage executable and run it
 
-For support: parambuilds@proton.me
+Step 3: Open BizSuite
+   - Launch BizSuite from your applications
+   - The app will prompt for activation on first run
+
+Step 4: Activate Your License
+   - Enter your activation key when prompted
+   - OR import your license.json file
+   - The app will work 100% offline after activation
+
+OFFLINE OWNERSHIP
+-----------------
+After activation, BizSuite works completely offline:
+- No internet connection required
+- No background server checks
+- Your data stays on your device
+- License never expires
+
+SUPPORT
+-------
+Email: ${INSTALLER_CONFIG.supportEmail}
+
+This is a one-time purchase. You own this software forever.
 `;
 
-  const blob = new Blob([placeholderContent], { type: 'text/plain' });
+  const blob = new Blob([guideContent], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `BizSuite-Installer-Info-v${installer.version}.txt`;
+  a.download = `BizSuite-Install-Guide-v${version}.txt`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

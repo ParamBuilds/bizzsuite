@@ -96,44 +96,46 @@ export const AppSidebar = () => {
           </div>
         </motion.div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {navigation.map((item, index) => {
-            const isActive = location.pathname === item.href || 
-              (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
-            
-            return (
-              <motion.div
-                key={item.name}
-                variants={itemVariants}
-                custom={index}
-              >
-                <NavLink
-                  to={item.href}
-                  className={cn(
-                    'sidebar-item relative overflow-hidden',
-                    isActive && 'sidebar-item-active'
-                  )}
+        {/* Navigation - Scrollable */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent">
+          <div className="space-y-1">
+            {navigation.map((item, index) => {
+              const isActive = location.pathname === item.href || 
+                (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+              
+              return (
+                <motion.div
+                  key={item.name}
+                  variants={itemVariants}
+                  custom={index}
                 >
-                  {isActive && (
-                    <motion.div
-                      layoutId="sidebar-active"
-                      className="absolute inset-0 bg-sidebar-accent rounded-lg"
-                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                  <motion.span 
-                    className="relative z-10 flex items-center gap-3"
-                    whileHover={{ x: 2 }}
-                    transition={{ duration: 0.2 }}
+                  <NavLink
+                    to={item.href}
+                    className={cn(
+                      'sidebar-item relative overflow-hidden',
+                      isActive && 'sidebar-item-active'
+                    )}
                   >
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </motion.span>
-                </NavLink>
-              </motion.div>
-            );
-          })}
+                    {isActive && (
+                      <motion.div
+                        layoutId="sidebar-active"
+                        className="absolute inset-0 bg-sidebar-accent rounded-lg"
+                        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                    <motion.span 
+                      className="relative z-10 flex items-center gap-3"
+                      whileHover={{ x: 2 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.name}</span>
+                    </motion.span>
+                  </NavLink>
+                </motion.div>
+              );
+            })}
+          </div>
         </nav>
 
         {/* User section */}

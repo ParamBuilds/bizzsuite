@@ -163,9 +163,8 @@ export async function activateLicense(licenseKey: string): Promise<{ success: bo
   }
 }
 
-// Payment URLs
+// Payment URLs - Only Offline Forever Plan (₹1499 one-time)
 export const PAYMENT_CONFIG = {
-  monthlyPrice: 499,
   offlineDownloadPrice: 1499,
   currency: 'INR',
   upiId: 'pramudittiwari@axl',
@@ -181,10 +180,6 @@ export function generateUPILink(amount: number, txnNote: string): string {
     tn: txnNote
   });
   return `upi://pay?${params.toString()}`;
-}
-
-export function generateMonthlyPaymentLink(): string {
-  return generateUPILink(PAYMENT_CONFIG.monthlyPrice, 'BizSuite Monthly Subscription');
 }
 
 export function generateOfflineDownloadPaymentLink(): string {

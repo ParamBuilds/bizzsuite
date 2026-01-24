@@ -12,7 +12,6 @@ import {
   Globe,
   CheckCircle2,
   Download,
-  Wifi,
   WifiOff
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -252,15 +251,15 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="grid md:grid-cols-3 gap-6"
+            className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto"
           >
             {/* Free Trial */}
             <motion.div 
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="flex flex-col p-6 rounded-2xl bg-card border border-border/50 shadow-card hover:shadow-xl transition-all duration-300"
+              whileHover={{ y: -8 }}
+              className="flex flex-col p-8 rounded-2xl bg-card border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <h3 className="text-xl font-semibold text-foreground mb-2">Free Trial</h3>
-              <p className="text-muted-foreground mb-4 text-sm">Get started with all features</p>
+              <p className="text-muted-foreground mb-4 text-sm">Try all features free</p>
               <p className="text-4xl font-bold text-foreground mb-2">
                 ₹0<span className="text-lg font-normal text-muted-foreground">/14 days</span>
               </p>
@@ -268,7 +267,7 @@ export default function LandingPage() {
                 {['All features unlocked', 'No credit card required', 'Full offline access', 'Email support'].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
-                    <span className="line-clamp-1">{item}</span>
+                    <span>{item}</span>
                   </li>
                 ))}
               </ul>
@@ -281,65 +280,35 @@ export default function LandingPage() {
               </Button>
             </motion.div>
 
-            {/* Monthly Subscription - Featured */}
+            {/* Offline Forever - Featured */}
             <motion.div 
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="flex flex-col p-6 rounded-2xl bg-primary text-primary-foreground shadow-xl relative overflow-hidden"
+              whileHover={{ y: -8 }}
+              className="flex flex-col p-8 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-xl relative overflow-hidden"
             >
               <div className="absolute top-4 right-4 px-3 py-1 bg-white/20 rounded-full text-xs font-medium backdrop-blur-sm">
-                Popular
+                Best Value
               </div>
               <div className="flex items-center gap-2 mb-2">
-                <Wifi className="h-5 w-5" />
-                <h3 className="text-xl font-semibold">Business Plan</h3>
+                <WifiOff className="h-5 w-5" />
+                <h3 className="text-xl font-semibold">Offline Forever</h3>
               </div>
-              <p className="opacity-80 mb-4 text-sm">Full access with cloud sync</p>
+              <p className="opacity-80 mb-4 text-sm">Download & own forever</p>
               <p className="text-4xl font-bold mb-2">
-                ₹499<span className="text-lg font-normal opacity-80">/month</span>
+                ₹1,499<span className="text-lg font-normal opacity-80"> one-time</span>
               </p>
               <ul className="space-y-3 my-6 flex-1">
-                {['Unlimited invoices & reports', 'Cloud sync & backup', 'Multi-user access', 'Priority support', 'Email notifications'].map((item) => (
+                {['Downloadable ZIP with installer', 'Works 100% offline', 'Lifetime license key', 'All features included', 'Pay via UPI (GPay/PhonePe)'].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-sm opacity-90">
-                    <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-                    <span className="line-clamp-1">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={() => navigate('/auth')}
-                className="w-full bg-white text-primary hover:bg-white/90 mt-auto"
-              >
-                Subscribe Now
-              </Button>
-            </motion.div>
-
-            {/* Offline Download */}
-            <motion.div 
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="flex flex-col p-6 rounded-2xl bg-card border-2 border-accent/50 shadow-card hover:shadow-xl transition-all duration-300"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <WifiOff className="h-5 w-5 text-accent" />
-                <h3 className="text-xl font-semibold text-foreground">Offline Forever</h3>
-              </div>
-              <p className="text-muted-foreground mb-4 text-sm">Download & own forever</p>
-              <p className="text-4xl font-bold text-foreground mb-2">
-                ₹1,499<span className="text-lg font-normal text-muted-foreground"> one-time</span>
-              </p>
-              <ul className="space-y-3 my-6 flex-1">
-                {['Downloadable installer', 'Works 100% offline', 'Lifetime license', 'No recurring fees', 'Local data only'].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Download className="h-4 w-4 text-accent flex-shrink-0" />
-                    <span className="line-clamp-1">{item}</span>
+                    <Download className="h-4 w-4 flex-shrink-0" />
+                    <span>{item}</span>
                   </li>
                 ))}
               </ul>
               <Button
                 onClick={() => navigate('/pricing')}
-                variant="outline"
-                className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground mt-auto"
+                className="w-full bg-white text-primary hover:bg-white/90 mt-auto font-semibold"
               >
-                Buy Offline Version
+                Buy Now with UPI
               </Button>
             </motion.div>
           </motion.div>

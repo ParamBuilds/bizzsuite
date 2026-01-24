@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,6 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { 
   CheckCircle2, 
-  Wifi, 
   WifiOff, 
   Download, 
   CreditCard, 
@@ -18,11 +17,10 @@ import {
   Crown,
   ArrowLeft,
   Smartphone,
-  Copy,
-  ExternalLink
+  Copy
 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
-import { activateLicense, generateMonthlyPaymentLink, generateOfflineDownloadPaymentLink, PAYMENT_CONFIG } from '@/lib/subscription';
+import { activateLicense, generateOfflineDownloadPaymentLink, PAYMENT_CONFIG } from '@/lib/subscription';
 import { MotionContainer, MotionItem, PageWrapper } from '@/components/ui/motion';
 
 export default function PricingPage() {
@@ -30,7 +28,7 @@ export default function PricingPage() {
   const { subscription, refresh, isPremium, isTrial, isExpired } = useSubscription();
   const [licenseKey, setLicenseKey] = useState('');
   const [isActivating, setIsActivating] = useState(false);
-  const [showPaymentInstructions, setShowPaymentInstructions] = useState<'monthly' | 'offline' | null>(null);
+  const [showPaymentInstructions, setShowPaymentInstructions] = useState(false);
 
   const handleActivateLicense = async () => {
     if (!licenseKey.trim()) {
@@ -51,14 +49,12 @@ export default function PricingPage() {
     }
   };
 
-  const handlePayment = (type: 'monthly' | 'offline') => {
-    const link = type === 'monthly' 
-      ? generateMonthlyPaymentLink() 
-      : generateOfflineDownloadPaymentLink();
+  const handlePayment = () => {
+    const link = generateOfflineDownloadPaymentLink();
     
     // Try to open UPI intent
     window.open(link, '_blank');
-    setShowPaymentInstructions(type);
+    setShowPaymentInstructions(true);
   };
 
   const copyUPIId = () => {
@@ -67,7 +63,7 @@ export default function PricingPage() {
   };
 
   return (
-    <PageWrapper className="max-w-4xl mx-auto space-y-8">
+    <PageWrapper className="max-w-3xl mx-auto space-y-8">
       <MotionContainer>
         <MotionItem>
           <div className="flex items-center gap-4 mb-6">
@@ -75,8 +71,8 @@ export default function PricingPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="page-header">Pricing & Subscription</h1>
-              <p className="page-description">Manage your subscription and billing</p>
+              <h1 className="page-header">Get BizSuite Offline Forever</h1>
+              <p className="page-description">One-time payment, lifetime access</p>
             </div>
           </div>
         </MotionItem>
@@ -89,7 +85,7 @@ export default function PricingPage() {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Crown className="h-5 w-5 text-warning" />
-                    Current Plan
+                    Current Status
                   </CardTitle>
                   <CardDescription>Your subscription status</CardDescription>
                 </div>
@@ -111,106 +107,66 @@ export default function PricingPage() {
               )}
               {isExpired && (
                 <p className="text-destructive">
-                  Your subscription has expired. Upgrade to continue using premium features.
+                  Your subscription has expired. Purchase the offline version to continue using all features.
                 </p>
               )}
             </CardContent>
           </Card>
         </MotionItem>
 
-        {/* Plans */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Monthly Plan */}
-          <MotionItem>
-            <Card className="relative overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-bl-lg">
-                Recommended
+        {/* Offline Forever Plan */}
+        <MotionItem>
+          <Card className="relative overflow-hidden border-2 border-primary/50">
+            <div className="absolute top-0 right-0 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-bl-xl">
+              Best Value
+            </div>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <WifiOff className="h-6 w-6 text-primary" />
+                <CardTitle className="text-2xl">Offline Forever</CardTitle>
               </div>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Wifi className="h-5 w-5 text-primary" />
-                  <CardTitle>Business Plan</CardTitle>
-                </div>
-                <CardDescription>Full access with cloud sync</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <span className="text-4xl font-bold">₹{PAYMENT_CONFIG.monthlyPrice}</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-                
-                <ul className="space-y-2 text-sm">
-                  {[
-                    'Unlimited invoices & reports',
-                    'Cloud sync & backup',
-                    'Multi-user access',
-                    'Priority support',
-                    'Email notifications',
-                    'Advanced analytics'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-success" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+              <CardDescription>Download & own forever - works 100% offline</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <span className="text-5xl font-bold">₹{PAYMENT_CONFIG.offlineDownloadPrice.toLocaleString('en-IN')}</span>
+                <span className="text-muted-foreground ml-2">one-time payment</span>
+              </div>
+              
+              <ul className="space-y-3">
+                {[
+                  'Downloadable ZIP with installer',
+                  'Works 100% offline - no internet needed',
+                  'Lifetime license key',
+                  'All features included',
+                  'No recurring fees ever',
+                  'Local data storage - your data stays with you',
+                  'Free updates for 1 year'
+                ].map((feature) => (
+                  <li key={feature} className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
 
+              <div className="pt-4">
                 <Button 
-                  className="w-full" 
-                  onClick={() => handlePayment('monthly')}
+                  size="lg"
+                  className="w-full text-lg py-6" 
+                  onClick={handlePayment}
                   disabled={isPremium}
                 >
-                  <Smartphone className="mr-2 h-4 w-4" />
-                  Pay with UPI
+                  <Smartphone className="mr-2 h-5 w-5" />
+                  Pay ₹{PAYMENT_CONFIG.offlineDownloadPrice.toLocaleString('en-IN')} with UPI
                 </Button>
-              </CardContent>
-            </Card>
-          </MotionItem>
-
-          {/* Offline Download */}
-          <MotionItem>
-            <Card className="border-accent/50">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <WifiOff className="h-5 w-5 text-accent" />
-                  <CardTitle>Offline Forever</CardTitle>
-                </div>
-                <CardDescription>Download & own forever</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <span className="text-4xl font-bold">₹{PAYMENT_CONFIG.offlineDownloadPrice}</span>
-                  <span className="text-muted-foreground"> one-time</span>
-                </div>
-                
-                <ul className="space-y-2 text-sm">
-                  {[
-                    'Downloadable ZIP with installer',
-                    'Works 100% offline',
-                    'Lifetime license key',
-                    'No recurring fees',
-                    'Local data storage only',
-                    'All features included'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center gap-2">
-                      <Download className="h-4 w-4 text-accent" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                <Button 
-                  variant="outline" 
-                  className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground" 
-                  onClick={() => handlePayment('offline')}
-                >
-                  <Smartphone className="mr-2 h-4 w-4" />
-                  Buy with UPI
-                </Button>
-              </CardContent>
-            </Card>
-          </MotionItem>
-        </div>
+                <p className="text-center text-sm text-muted-foreground mt-2">
+                  Supports Google Pay, PhonePe, Paytm & all UPI apps
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </MotionItem>
 
         {/* Payment Instructions */}
         {showPaymentInstructions && (
@@ -227,23 +183,26 @@ export default function PricingPage() {
                   If the UPI app didn't open automatically, you can pay manually:
                 </p>
                 
-                <div className="flex items-center gap-2 p-3 bg-background rounded-lg border">
-                  <span className="font-mono text-sm flex-1">{PAYMENT_CONFIG.upiId}</span>
+                <div className="flex items-center gap-2 p-4 bg-background rounded-lg border">
+                  <span className="font-mono text-lg flex-1">{PAYMENT_CONFIG.upiId}</span>
                   <Button variant="ghost" size="sm" onClick={copyUPIId}>
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
 
-                <div className="text-sm space-y-2">
-                  <p><strong>Amount:</strong> ₹{showPaymentInstructions === 'monthly' ? PAYMENT_CONFIG.monthlyPrice : PAYMENT_CONFIG.offlineDownloadPrice}</p>
-                  <p><strong>Note:</strong> {showPaymentInstructions === 'monthly' ? 'BizSuite Monthly' : 'BizSuite Offline'}</p>
+                <div className="text-sm space-y-2 p-4 bg-background rounded-lg border">
+                  <p><strong>Amount:</strong> ₹{PAYMENT_CONFIG.offlineDownloadPrice.toLocaleString('en-IN')}</p>
+                  <p><strong>Note:</strong> BizSuite Offline - Lifetime</p>
                 </div>
 
                 <Separator />
 
-                <p className="text-sm text-muted-foreground">
-                  After payment, you'll receive a license key via email within 24 hours. Enter it below to activate.
-                </p>
+                <div className="bg-primary/10 p-4 rounded-lg">
+                  <p className="text-sm">
+                    <strong>After payment:</strong> You'll receive a license key via email within 24 hours. 
+                    Enter it below to activate your lifetime license and get the download link.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </MotionItem>
@@ -258,7 +217,7 @@ export default function PricingPage() {
                 Activate License Key
               </CardTitle>
               <CardDescription>
-                Enter your license key to activate your subscription
+                Enter your license key to activate lifetime access
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -291,6 +250,33 @@ export default function PricingPage() {
             </CardContent>
           </Card>
         </MotionItem>
+
+        {/* Download Section - Only show if activated */}
+        {isPremium && (
+          <MotionItem>
+            <Card className="border-success/50 bg-success/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-success">
+                  <Download className="h-5 w-5" />
+                  Download Your Offline Version
+                </CardTitle>
+                <CardDescription>
+                  Your lifetime license is active. Download BizSuite now!
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  size="lg"
+                  className="w-full bg-success hover:bg-success/90 text-success-foreground"
+                  onClick={() => toast.info('Download link will be sent to your email')}
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Download BizSuite Offline (ZIP)
+                </Button>
+              </CardContent>
+            </Card>
+          </MotionItem>
+        )}
       </MotionContainer>
     </PageWrapper>
   );

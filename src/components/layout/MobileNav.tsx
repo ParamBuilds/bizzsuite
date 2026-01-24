@@ -15,7 +15,8 @@ import {
   Archive,
   ClipboardCheck,
   Shield,
-  Activity
+  Activity,
+  BookOpen
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusiness } from '@/contexts/BusinessContext';
@@ -41,6 +42,7 @@ const navigation = [
   { name: 'Inspection Mode', href: '/inspection-mode', icon: ClipboardCheck },
   { name: 'Privacy', href: '/privacy', icon: Shield },
   { name: 'Audit Logs', href: '/audit-logs', icon: Activity },
+  { name: 'Design Principles', href: '/design-principles', icon: BookOpen },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

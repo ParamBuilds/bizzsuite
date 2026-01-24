@@ -15,7 +15,8 @@ import {
   CreditCard,
   HeartPulse,
   Archive,
-  ClipboardCheck
+  ClipboardCheck,
+  BookOpen
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusiness } from '@/contexts/BusinessContext';
@@ -35,6 +36,7 @@ const navigation = [
   { name: 'Privacy', href: '/privacy', icon: Shield },
   { name: 'Audit Logs', href: '/audit-logs', icon: Activity },
   { name: 'Health Check', href: '/health', icon: HeartPulse },
+  { name: 'Design Principles', href: '/design-principles', icon: BookOpen },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

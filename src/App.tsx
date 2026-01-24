@@ -27,6 +27,7 @@ import HealthCheckPage from "./pages/HealthCheckPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
 import EvidenceVaultPage from "./pages/EvidenceVaultPage";
 import InspectionModePage from "./pages/InspectionModePage";
+import DesignPrinciplesPage from "./pages/DesignPrinciplesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ const App = () => (
                   <Route path="/inspection-mode" element={<InspectionModePage />} />
                   <Route path="/health" element={<HealthCheckPage />} />
                   <Route path="/system-status" element={<SystemStatusPage />} />
+                  <Route path="/design-principles" element={<DesignPrinciplesPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />

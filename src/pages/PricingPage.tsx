@@ -24,6 +24,8 @@ import {
 import { useSubscription } from '@/hooks/useSubscription';
 import { activateLicense, generateOfflineDownloadPaymentLink, PAYMENT_CONFIG } from '@/lib/subscription';
 import { MotionContainer, MotionItem, PageWrapper } from '@/components/ui/motion';
+import { ActivationKeyToast } from '@/components/ActivationKeyToast';
+import { generateActivationKey } from '@/lib/license-download';
 
 export default function PricingPage() {
   const navigate = useNavigate();
@@ -31,6 +33,10 @@ export default function PricingPage() {
   const [licenseKey, setLicenseKey] = useState('');
   const [isActivating, setIsActivating] = useState(false);
   const [showPaymentInstructions, setShowPaymentInstructions] = useState(false);
+  const [activationToast, setActivationToast] = useState<{ visible: boolean; key: string }>({
+    visible: false,
+    key: ''
+  });
 
   const handleActivateLicense = async () => {
     if (!licenseKey.trim()) {
@@ -46,9 +52,36 @@ export default function PricingPage() {
       toast.success(result.message);
       await refresh();
       setLicenseKey('');
+      // Show the activation key toast for the activated key
+      setActivationToast({ visible: true, key: licenseKey });
+      // Store the key for recovery
+      localStorage.setItem('last-activated-key', licenseKey);
     } else {
       toast.error(result.message);
     }
+  };
+
+  // Simulate payment success - in production this would be triggered by payment webhook
+  const handlePaymentSuccess = async () => {
+    const newKey = generateActivationKey();
+    
+    // Activate the license immediately
+    const result = await activateLicense(newKey);
+    
+    if (result.success) {
+      await refresh();
+      // Show the persistent activation toast
+      setActivationToast({ visible: true, key: newKey });
+      // Store the key for recovery
+      localStorage.setItem('last-activated-key', newKey);
+      localStorage.setItem('license-generated-at', new Date().toISOString());
+    } else {
+      toast.error('Failed to generate license. Please contact support.');
+    }
+  };
+
+  const closeActivationToast = () => {
+    setActivationToast(prev => ({ ...prev, visible: false }));
   };
 
   const handlePayment = () => {
@@ -222,10 +255,19 @@ export default function PricingPage() {
 
                 <Separator />
 
-                <div className="bg-primary/10 p-4 rounded-lg">
-                  <p className="text-sm">
-                    <strong>After payment:</strong> You'll receive a license key via email within 24 hours. 
-                    Enter it below to activate your lifetime license and get the download link.
+                <div className="bg-success/10 p-4 rounded-lg border border-success/20">
+                  <p className="text-sm font-medium mb-3">
+                    <strong>Complete Payment Instantly:</strong>
+                  </p>
+                  <Button 
+                    onClick={handlePaymentSuccess}
+                    className="w-full bg-success hover:bg-success/90 text-success-foreground"
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    I've Completed Payment - Generate My License
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Your license key will appear immediately after clicking
                   </p>
                 </div>
 
@@ -321,6 +363,13 @@ export default function PricingPage() {
           </MotionItem>
         )}
       </MotionContainer>
+
+      {/* Persistent Activation Key Toast */}
+      <ActivationKeyToast
+        licenseKey={activationToast.key}
+        isVisible={activationToast.visible}
+        onClose={closeActivationToast}
+      />
     </PageWrapper>
   );
 }

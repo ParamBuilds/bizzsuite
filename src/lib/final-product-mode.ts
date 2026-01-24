@@ -4,7 +4,7 @@
 export const FINAL_PRODUCT_MODE = {
   // Core flags
   finalRelease: true,
-  version: '1.0.0',
+  version: '1.1.0',
   
   // Disabled growth mechanics
   showFeatureFlags: false,

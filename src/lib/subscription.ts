@@ -163,9 +163,9 @@ export async function activateLicense(licenseKey: string): Promise<{ success: bo
   }
 }
 
-// Payment URLs - Only Offline Forever Plan (₹1499 one-time)
+// Payment URLs - Only Offline Forever Plan (₹1299 one-time)
 export const PAYMENT_CONFIG = {
-  offlineDownloadPrice: 1499,
+  offlineDownloadPrice: 1299,
   currency: 'INR',
   upiId: 'pramudittiwari@axl',
   merchantName: 'BizSuite',

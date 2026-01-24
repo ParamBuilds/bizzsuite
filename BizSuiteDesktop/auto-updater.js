@@ -93,4 +93,14 @@ function sendStatusToWindow(status, message) {
   }
 }
 
-module.exports = { initAutoUpdater, checkForUpdates };
+// Download update
+function downloadUpdate() {
+  autoUpdater.downloadUpdate();
+}
+
+// Install update
+function installUpdate() {
+  autoUpdater.quitAndInstall(false, true);
+}
+
+module.exports = { initAutoUpdater, checkForUpdates, downloadUpdate, installUpdate };

@@ -11,7 +11,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   
   // Check for updates manually
-  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  checkForUpdates: () => {
+    ipcRenderer.send('check-for-updates');
+    return true;
+  },
+  
+  // Download update
+  downloadUpdate: () => ipcRenderer.send('download-update'),
+  
+  // Install update
+  installUpdate: () => ipcRenderer.send('install-update'),
   
   // Platform info
   platform: process.platform,

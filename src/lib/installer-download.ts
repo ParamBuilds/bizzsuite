@@ -6,8 +6,8 @@ import { FINAL_PRODUCT_MODE } from './final-product-mode';
 // Installer URLs hosted on GitHub Releases
 export const INSTALLER_CONFIG = {
   windows: {
-    url: 'https://github.com/ParamBuilds/bizzsuite/releases/download/BizSuite/BizSuite.Setup.1.0.0.exe',
-    fileName: 'BizSuite.Setup.1.0.0.exe',
+    url: 'https://github.com/ParamBuilds/bizzsuite/releases/download/v1.1.0/BizSuite.Setup.1.1.0.exe',
+    fileName: 'BizSuite.Setup.1.1.0.exe',
     size: '~100 MB',
   },
   mac: {

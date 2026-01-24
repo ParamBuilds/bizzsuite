@@ -303,8 +303,76 @@ const HeroSection = ({
                                 </button>
                             )}
                             {!imageUrl && !videoUrl && (
-                                <div className="flex items-center justify-center w-full h-full bg-muted/50">
-                                    <p className="text-muted-foreground text-lg">Card Content Area</p>
+                                <div className="w-full h-full bg-gradient-to-br from-muted/30 via-background to-muted/50 p-4 md:p-6">
+                                    {/* Animated Dashboard Mockup */}
+                                    <div className="h-full flex flex-col gap-3 md:gap-4">
+                                        {/* Header Bar */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                                                    <div className="w-4 h-4 rounded bg-primary animate-pulse" />
+                                                </div>
+                                                <div className="h-4 w-24 bg-muted-foreground/20 rounded animate-pulse" />
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <div className="h-8 w-8 rounded-full bg-muted-foreground/10 animate-pulse" />
+                                                <div className="h-8 w-8 rounded-full bg-muted-foreground/10 animate-pulse" style={{ animationDelay: '0.1s' }} />
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Stats Row */}
+                                        <div className="grid grid-cols-4 gap-2 md:gap-3">
+                                            {[
+                                                { color: 'bg-primary', delay: '0s' },
+                                                { color: 'bg-success', delay: '0.1s' },
+                                                { color: 'bg-warning', delay: '0.2s' },
+                                                { color: 'bg-accent', delay: '0.3s' }
+                                            ].map((stat, i) => (
+                                                <div key={i} className="p-2 md:p-3 rounded-lg bg-card border border-border/50 shadow-sm">
+                                                    <div className={`h-1.5 w-8 ${stat.color} rounded mb-2 animate-pulse`} style={{ animationDelay: stat.delay }} />
+                                                    <div className="h-5 w-12 bg-foreground/10 rounded animate-pulse" style={{ animationDelay: stat.delay }} />
+                                                    <div className="h-3 w-16 bg-muted-foreground/10 rounded mt-1 animate-pulse" style={{ animationDelay: stat.delay }} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        
+                                        {/* Main Content */}
+                                        <div className="flex-1 grid grid-cols-3 gap-3 md:gap-4">
+                                            {/* Chart Area */}
+                                            <div className="col-span-2 rounded-lg bg-card border border-border/50 p-3 md:p-4 shadow-sm">
+                                                <div className="h-3 w-20 bg-muted-foreground/20 rounded mb-3 animate-pulse" />
+                                                <div className="flex items-end gap-1 h-[calc(100%-24px)]">
+                                                    {[40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 50, 95].map((height, i) => (
+                                                        <div
+                                                            key={i}
+                                                            className="flex-1 bg-primary/60 rounded-t transition-all duration-500"
+                                                            style={{ 
+                                                                height: `${height}%`,
+                                                                animationDelay: `${i * 0.05}s`,
+                                                                opacity: 0.4 + (i * 0.05)
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Recent List */}
+                                            <div className="rounded-lg bg-card border border-border/50 p-3 md:p-4 shadow-sm">
+                                                <div className="h-3 w-16 bg-muted-foreground/20 rounded mb-3 animate-pulse" />
+                                                <div className="space-y-2">
+                                                    {[1, 2, 3, 4].map((item) => (
+                                                        <div key={item} className="flex items-center gap-2 p-2 rounded bg-muted/30 animate-pulse" style={{ animationDelay: `${item * 0.1}s` }}>
+                                                            <div className="w-6 h-6 rounded-full bg-primary/20" />
+                                                            <div className="flex-1">
+                                                                <div className="h-2.5 w-full bg-muted-foreground/15 rounded" />
+                                                                <div className="h-2 w-2/3 bg-muted-foreground/10 rounded mt-1" />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>

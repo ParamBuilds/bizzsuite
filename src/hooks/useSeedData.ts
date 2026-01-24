@@ -22,8 +22,6 @@ const sampleProducts = [
   { name: 'Monitor Light Bar', type: 'product', unit_price: 5000, cost_price: 3200, gst_rate: 18, stock_quantity: 3, low_stock_threshold: 5, sku: 'ML-004' },
 ];
 
-const expenseCategories = ['rent', 'utilities', 'salaries', 'marketing', 'supplies', 'travel', 'other'] as const;
-
 const sampleExpenses = [
   { description: 'Office Rent - January', amount: 45000, category: 'rent', vendor: 'ABC Properties' },
   { description: 'Electricity Bill', amount: 8500, category: 'utilities', vendor: 'MSEDCL' },
@@ -40,51 +38,65 @@ export const useSeedData = () => {
 
   const seedMutation = useMutation({
     mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Please sign in first');
+
       let businessId = business?.id;
 
-      // If no business exists, create one
+      // If no business exists, check profile or create one
       if (!businessId) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Please sign in first');
-
-        // Create a new business
-        const { data: newBusiness, error: bizError } = await supabase
-          .from('businesses')
-          .insert({ name: 'My Business' })
-          .select()
-          .single();
-        
-        if (bizError) throw bizError;
-        businessId = newBusiness.id;
-
-        // Check if profile exists
+        // First check if user already has a profile with a business
         const { data: existingProfile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('business_id')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (existingProfile) {
-          // Update existing profile with business_id
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ business_id: businessId })
-            .eq('user_id', user.id);
-          if (updateError) throw updateError;
+        if (existingProfile?.business_id) {
+          businessId = existingProfile.business_id;
         } else {
-          // Create profile
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              user_id: user.id,
-              business_id: businessId,
-              role: 'owner'
-            });
-          if (profileError) throw profileError;
-        }
+          // Create a new business
+          const { data: newBusiness, error: bizError } = await supabase
+            .from('businesses')
+            .insert({ name: 'My Business' })
+            .select('id')
+            .single();
+          
+          if (bizError) {
+            console.error('Business creation error:', bizError);
+            throw new Error(`Could not create business: ${bizError.message}`);
+          }
+          businessId = newBusiness.id;
 
-        // Refetch business context
-        await refetch();
+          // Check if profile exists to update or create
+          const { data: profileCheck } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (profileCheck) {
+            // Update existing profile with business_id
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ business_id: businessId })
+              .eq('user_id', user.id);
+            if (updateError) throw updateError;
+          } else {
+            // Create profile
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({
+                user_id: user.id,
+                business_id: businessId,
+                role: 'owner'
+              });
+            if (profileError) throw profileError;
+          }
+
+          // Refetch business context
+          await refetch();
+        }
       }
 
       // Insert customers

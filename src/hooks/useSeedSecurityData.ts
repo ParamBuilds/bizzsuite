@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { writeAuditLog } from '@/lib/offline-db/audit-logger';
 import { addEvidence } from '@/lib/evidence-vault';
+import { getDatabase } from '@/lib/offline-db/database';
 import { toast } from 'sonner';
 
 // Sample audit log entries for demo
@@ -95,6 +96,7 @@ const sampleSecurityEvents = [
 
 export function useSeedSecurityData() {
   const [isSeeding, setIsSeeding] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const seedSecurityData = async () => {
     setIsSeeding(true);
@@ -203,5 +205,61 @@ export function useSeedSecurityData() {
     }
   };
 
-  return { seedSecurityData, isSeeding };
+  const clearSecurityData = async () => {
+    setIsClearing(true);
+    
+    try {
+      const db = await getDatabase();
+      
+      // Clear local RxDB audit logs
+      const allAuditLogs = await db.audit_logs.find().exec();
+      for (const log of allAuditLogs) {
+        await log.remove();
+      }
+      
+      // Clear local RxDB evidence vault
+      const allEvidence = await db.evidence_vault.find().exec();
+      for (const evidence of allEvidence) {
+        await evidence.remove();
+      }
+
+      // Clear Supabase data if organization exists
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        try {
+          const { data: userRole } = await supabase
+            .from('user_roles')
+            .select('organization_id')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .maybeSingle();
+
+          if (userRole?.organization_id) {
+            await supabase
+              .from('security_events')
+              .delete()
+              .eq('organization_id', userRole.organization_id);
+              
+            await supabase
+              .from('audit_logs')
+              .delete()
+              .eq('organization_id', userRole.organization_id);
+          }
+        } catch (error) {
+          console.log('Supabase security data clearing skipped');
+        }
+      }
+
+      toast.success('Demo security data cleared successfully');
+      return { success: true };
+    } catch (error: any) {
+      console.error('Failed to clear security data:', error);
+      toast.error(`Failed to clear security data: ${error.message}`);
+      return { success: false, error };
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  return { seedSecurityData, isSeeding, clearSecurityData, isClearing };
 }

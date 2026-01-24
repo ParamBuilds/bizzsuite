@@ -8,6 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { BusinessProvider } from "@/contexts/BusinessContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { DesktopModeIndicator } from "@/components/DesktopModeIndicator";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -23,6 +25,8 @@ import AuditLogsPage from "./pages/AuditLogsPage";
 import PricingPage from "./pages/PricingPage";
 import HealthCheckPage from "./pages/HealthCheckPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
+import EvidenceVaultPage from "./pages/EvidenceVaultPage";
+import InspectionModePage from "./pages/InspectionModePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +38,8 @@ const App = () => (
         <Toaster />
         <Sonner />
         <OfflineBanner />
+        <PWAInstallPrompt />
+        <DesktopModeIndicator />
         <BrowserRouter>
           <AuthProvider>
             <BusinessProvider>
@@ -51,6 +57,8 @@ const App = () => (
                   <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/privacy" element={<PrivacyCenterPage />} />
                   <Route path="/audit-logs" element={<AuditLogsPage />} />
+                  <Route path="/evidence-vault" element={<EvidenceVaultPage />} />
+                  <Route path="/inspection-mode" element={<InspectionModePage />} />
                   <Route path="/health" element={<HealthCheckPage />} />
                   <Route path="/system-status" element={<SystemStatusPage />} />
                   <Route path="/settings" element={<SettingsPage />} />

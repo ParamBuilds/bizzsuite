@@ -19,13 +19,11 @@ import {
   Smartphone,
   Copy,
   Mail,
-  HelpCircle,
-  TestTube
+  HelpCircle
 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { activateLicense, generateOfflineDownloadPaymentLink, PAYMENT_CONFIG } from '@/lib/subscription';
 import { MotionContainer, MotionItem, PageWrapper } from '@/components/ui/motion';
-import { supabase } from '@/integrations/supabase/client';
 
 export default function PricingPage() {
   const navigate = useNavigate();
@@ -33,32 +31,6 @@ export default function PricingPage() {
   const [licenseKey, setLicenseKey] = useState('');
   const [isActivating, setIsActivating] = useState(false);
   const [showPaymentInstructions, setShowPaymentInstructions] = useState(false);
-  const [testEmail, setTestEmail] = useState('');
-  const [isSendingTest, setIsSendingTest] = useState(false);
-
-  const handleTestLicenseEmail = async () => {
-    if (!testEmail.trim() || !testEmail.includes('@')) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-
-    setIsSendingTest(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('send-license-key', {
-        body: { email: testEmail }
-      });
-
-      if (error) throw error;
-
-      toast.success(`License key sent to ${testEmail}! Check your inbox.`);
-      console.log('Test response:', data);
-    } catch (err: any) {
-      console.error('Test email error:', err);
-      toast.error(err.message || 'Failed to send test email');
-    } finally {
-      setIsSendingTest(false);
-    }
-  };
 
   const handleActivateLicense = async () => {
     if (!licenseKey.trim()) {
@@ -80,12 +52,8 @@ export default function PricingPage() {
   };
 
   const handlePayment = () => {
-    // Always show instructions first (reliable across desktop/PWA/webviews)
     setShowPaymentInstructions(true);
-
     toast.info('Follow the payment steps below to complete your UPI payment.');
-
-    // Scroll the instructions into view
     window.setTimeout(() => {
       document.getElementById('payment-instructions')?.scrollIntoView({
         behavior: 'smooth',
@@ -107,7 +75,6 @@ export default function PricingPage() {
 
   const openUPIApp = () => {
     const link = generateOfflineDownloadPaymentLink();
-    // This will work on mobile devices with UPI apps installed.
     window.location.href = link;
   };
 
@@ -353,47 +320,6 @@ export default function PricingPage() {
             </Card>
           </MotionItem>
         )}
-
-        {/* Test Section - For Development */}
-        <MotionItem>
-          <Card className="border-dashed border-2 border-muted-foreground/30">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-muted-foreground">
-                <TestTube className="h-5 w-5" />
-                Test License Email (Development)
-              </CardTitle>
-              <CardDescription>
-                Simulate receiving a license key after payment
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="test-email">Your Email</Label>
-                  <Input
-                    id="test-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={testEmail}
-                    onChange={(e) => setTestEmail(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button 
-                    onClick={handleTestLicenseEmail} 
-                    disabled={isSendingTest || !testEmail.trim()}
-                    variant="outline"
-                  >
-                    {isSendingTest ? 'Sending...' : 'Send Test License'}
-                  </Button>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                This will generate a random license key and email it to you. Use it to test the full activation flow.
-              </p>
-            </CardContent>
-          </Card>
-        </MotionItem>
       </MotionContainer>
     </PageWrapper>
   );

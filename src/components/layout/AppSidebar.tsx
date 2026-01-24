@@ -13,7 +13,9 @@ import {
   Shield,
   Activity,
   CreditCard,
-  HeartPulse
+  HeartPulse,
+  Archive,
+  ClipboardCheck
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusiness } from '@/contexts/BusinessContext';
@@ -28,10 +30,11 @@ const navigation = [
   { name: 'Vendors', href: '/vendors', icon: Truck },
   { name: 'Expenses', href: '/expenses', icon: Wallet },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
+  { name: 'Evidence Vault', href: '/evidence-vault', icon: Archive },
+  { name: 'Inspection Mode', href: '/inspection-mode', icon: ClipboardCheck },
   { name: 'Privacy', href: '/privacy', icon: Shield },
   { name: 'Audit Logs', href: '/audit-logs', icon: Activity },
   { name: 'Health Check', href: '/health', icon: HeartPulse },
-  { name: 'Pricing', href: '/pricing', icon: CreditCard },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

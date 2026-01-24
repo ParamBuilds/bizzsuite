@@ -11,7 +11,9 @@ import {
   Building2,
   Truck,
   Shield,
-  Activity
+  Activity,
+  CreditCard,
+  HeartPulse
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusiness } from '@/contexts/BusinessContext';
@@ -28,6 +30,8 @@ const navigation = [
   { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Privacy', href: '/privacy', icon: Shield },
   { name: 'Audit Logs', href: '/audit-logs', icon: Activity },
+  { name: 'Health Check', href: '/health', icon: HeartPulse },
+  { name: 'Pricing', href: '/pricing', icon: CreditCard },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

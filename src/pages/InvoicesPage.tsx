@@ -135,6 +135,10 @@ export default function InvoicesPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: InvoiceForm) => {
+      if (!business?.id) {
+        throw new Error('Business not found. Please refresh and try again.');
+      }
+      
       // Calculate totals
       let subtotal = 0;
       let taxAmount = 0;
@@ -152,7 +156,7 @@ export default function InvoicesPage() {
       const { data: invoice, error } = await supabase
         .from('invoices')
         .insert({
-          business_id: business?.id,
+          business_id: business.id,
           customer_id: data.customer_id || null,
           invoice_number: data.invoice_number,
           status: data.status,

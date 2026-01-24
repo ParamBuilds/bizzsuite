@@ -72,9 +72,12 @@ export default function CustomersPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: CustomerForm) => {
+      if (!business?.id) {
+        throw new Error('Business not found. Please refresh and try again.');
+      }
       const { error } = await supabase.from('customers').insert({
         ...data,
-        business_id: business?.id,
+        business_id: business.id,
       });
       if (error) throw error;
     },

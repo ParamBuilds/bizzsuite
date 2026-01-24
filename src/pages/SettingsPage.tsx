@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Receipt, Save, Database, Loader2 } from 'lucide-react';
+import { Building2, IndianRupee, Save, Database, Loader2 } from 'lucide-react';
 
 import { toast } from 'sonner';
 
@@ -144,7 +144,7 @@ export default function SettingsPage() {
             Business
           </TabsTrigger>
           <TabsTrigger value="gst" className="gap-2">
-            <Receipt className="h-4 w-4" />
+            <IndianRupee className="h-4 w-4" />
             GST Settings
           </TabsTrigger>
           <TabsTrigger value="data" className="gap-2">
@@ -246,7 +246,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               {!gstForm.gst_enabled ? (
                 <div className="text-center py-8">
-                  <Receipt className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+                  <IndianRupee className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
                   <h3 className="font-medium text-lg">GST is disabled</h3>
                   <p className="text-muted-foreground">
                     Enable GST in the Business tab to configure these settings

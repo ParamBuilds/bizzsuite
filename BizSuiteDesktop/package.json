@@ -1,0 +1,58 @@
+{
+  "name": "bizsuite-desktop",
+  "version": "1.0.0",
+  "description": "BizSuite - Offline-First Business Management Software",
+  "main": "main.js",
+  "author": "BizSuite",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "start:debug": "electron . --debug",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.bizsuite.desktop",
+    "productName": "BizSuite",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "dist/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "dist/favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "dist/favicon.ico",
+      "uninstallerIcon": "dist/favicon.ico",
+      "installerHeaderIcon": "dist/favicon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "BizSuite"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "dist/favicon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "dist/favicon.ico"
+    }
+  }
+}

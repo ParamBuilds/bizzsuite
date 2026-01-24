@@ -17,7 +17,9 @@ import {
   Crown,
   ArrowLeft,
   Smartphone,
-  Copy
+  Copy,
+  Mail,
+  HelpCircle
 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { activateLicense, generateOfflineDownloadPaymentLink, PAYMENT_CONFIG } from '@/lib/subscription';
@@ -230,6 +232,24 @@ export default function PricingPage() {
                     <strong>After payment:</strong> You'll receive a license key via email within 24 hours. 
                     Enter it below to activate your lifetime license and get the download link.
                   </p>
+                </div>
+
+                {/* Support Section */}
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg border">
+                  <div className="flex items-center gap-2">
+                    <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Need help with payment?</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                  >
+                    <a href={`mailto:${PAYMENT_CONFIG.supportEmail}?subject=BizSuite%20Payment%20Support&body=Hi%2C%0A%0AI%20need%20help%20with%20my%20BizSuite%20Offline%20payment.%0A%0A`}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      Contact Support
+                    </a>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

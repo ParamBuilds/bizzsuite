@@ -92,8 +92,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("License key:", licenseKey);
 
     // Send email with license key
+    // Using Resend's test domain until custom domain is verified
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: "BizSuite <noreply@logchainapp.lovable.app>",
+      from: "BizSuite <onboarding@resend.dev>",
       to: [userEmail],
       subject: "🎉 Your BizSuite Lifetime License Key",
       html: `

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -6,18 +6,40 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Mail, Lock, User, ArrowRight, Zap, Shield, BarChart3, CheckCircle2 } from 'lucide-react';
+import { Building2, Mail, Lock, User, ArrowRight, Zap, Shield, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
+import { PasswordStrengthIndicator, getPasswordStrength } from '@/components/auth/PasswordStrengthIndicator';
+
+// Common passwords to reject
+const commonPasswords = [
+  'password', 'password123', '123456', '12345678', 'qwerty', 'abc123',
+  'monkey', 'master', 'dragon', 'letmein', 'login', 'admin', 'welcome',
+  'password1', 'iloveyou', 'sunshine', 'princess', 'football', 'baseball',
+];
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
+  email: z.string().trim().email('Please enter a valid email').max(255),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-const signupSchema = loginSchema.extend({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
+// Strong password validation for signup
+const signupSchema = z.object({
+  fullName: z.string().trim().min(2, 'Name must be at least 2 characters').max(100),
+  email: z.string().trim().email('Please enter a valid email').max(255),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password is too long')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, 'Password must contain at least one special character')
+    .refine(
+      (val) => !commonPasswords.some((common) => val.toLowerCase().includes(common)),
+      'This password is too common. Please choose a more unique password.'
+    ),
 });
 
 const features = [
@@ -295,7 +317,7 @@ export default function AuthPage() {
                     <div className="space-y-2">
                       <Label htmlFor="signup-password">Password</Label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="signup-password"
                           type="password"
@@ -306,9 +328,14 @@ export default function AuthPage() {
                         />
                       </div>
                       {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                      <PasswordStrengthIndicator password={signupForm.password} />
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={isSubmitting || (signupForm.password.length > 0 && !getPasswordStrength(signupForm.password).isValid)}
+                    >
                       {isSubmitting ? 'Creating account...' : 'Create Account'}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>

@@ -122,9 +122,9 @@ export default function PricingPage() {
         </MotionItem>
 
         {/* Offline Forever Plan */}
-        <MotionItem>
+        <div>
           <Card className="relative overflow-hidden border-2 border-primary/50">
-            <div className="absolute top-0 right-0 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-bl-xl">
+            <div className="absolute top-0 right-0 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-bl-xl z-10">
               Best Value
             </div>
             <CardHeader>
@@ -160,7 +160,7 @@ export default function PricingPage() {
               <div className="pt-4">
                 <Button 
                   size="lg"
-                  className="w-full text-lg py-6" 
+                  className="w-full text-lg py-6 relative z-20" 
                   onClick={handlePayment}
                   disabled={isPremium}
                 >
@@ -173,7 +173,7 @@ export default function PricingPage() {
               </div>
             </CardContent>
           </Card>
-        </MotionItem>
+        </div>
 
         {/* Payment Instructions */}
         {showPaymentInstructions && (

@@ -26,6 +26,7 @@ import { activateLicense, generateOfflineDownloadPaymentLink, PAYMENT_CONFIG } f
 import { MotionContainer, MotionItem, PageWrapper } from '@/components/ui/motion';
 import { ActivationKeyToast } from '@/components/ActivationKeyToast';
 import { generateActivationKey } from '@/lib/license-download';
+import { downloadInstaller, getInstallerInfo, detectPlatform, getAllInstallers } from '@/lib/installer-download';
 
 export default function PricingPage() {
   const navigate = useNavigate();
@@ -343,21 +344,72 @@ export default function PricingPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-success">
                   <Download className="h-5 w-5" />
-                  Download Your Offline Version
+                  Download Your Software
                 </CardTitle>
                 <CardDescription>
-                  Your lifetime license is active. Download BizSuite now!
+                  Your lifetime license is active. Download and install BizSuite!
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                {/* Installation Steps */}
+                <div className="text-sm text-muted-foreground space-y-1 mb-4">
+                  <p><strong>Step 1:</strong> Download and install the software</p>
+                  <p><strong>Step 2:</strong> Open the app locally</p>
+                  <p><strong>Step 3:</strong> Activate using your key or license file</p>
+                </div>
+
+                {/* Primary Download Button */}
                 <Button 
                   size="lg"
                   className="w-full bg-success hover:bg-success/90 text-success-foreground"
-                  onClick={() => toast.info('Download link will be sent to your email')}
+                  onClick={() => {
+                    const platform = detectPlatform();
+                    downloadInstaller(platform === 'pwa' ? 'windows' : platform);
+                    toast.success('Installer download started');
+                  }}
                 >
                   <Download className="mr-2 h-5 w-5" />
-                  Download BizSuite Offline (ZIP)
+                  Download Installer ({getInstallerInfo().fileName})
                 </Button>
+
+                {/* Other Platforms */}
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {getAllInstallers().map((installer) => (
+                    <Button
+                      key={installer.platform}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        downloadInstaller(installer.platform);
+                        toast.success(`${installer.platform} installer download started`);
+                      }}
+                    >
+                      {installer.platform.charAt(0).toUpperCase() + installer.platform.slice(1)}
+                    </Button>
+                  ))}
+                </div>
+
+                <Separator />
+
+                {/* License Key Display */}
+                {subscription?.licenseKey && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Your Activation Key:</p>
+                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
+                      <code className="font-mono text-sm flex-1 break-all">{subscription.licenseKey}</code>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(subscription.licenseKey || '');
+                          toast.success('Key copied to clipboard');
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </MotionItem>

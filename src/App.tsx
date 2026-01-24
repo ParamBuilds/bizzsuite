@@ -28,6 +28,7 @@ import SystemStatusPage from "./pages/SystemStatusPage";
 import EvidenceVaultPage from "./pages/EvidenceVaultPage";
 import InspectionModePage from "./pages/InspectionModePage";
 import DesignPrinciplesPage from "./pages/DesignPrinciplesPage";
+import HowInstallationWorksPage from "./pages/HowInstallationWorksPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/how-installation-works" element={<HowInstallationWorksPage />} />
                 <Route element={<AppLayout />}>
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/customers" element={<CustomersPage />} />

@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BusinessProvider } from "@/contexts/BusinessContext";
@@ -10,6 +10,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { DesktopModeIndicator } from "@/components/DesktopModeIndicator";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { isDesktopMode, shouldEnablePWA } from "@/lib/desktop-mode";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -33,48 +35,60 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Choose router based on environment:
+// - HashRouter for desktop/Electron (file:// protocol)
+// - BrowserRouter for web hosting
+const Router = isDesktopMode() ? HashRouter : BrowserRouter;
+
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<LandingPage />} />
+    <Route path="/auth" element={<AuthPage />} />
+    <Route path="/pricing" element={<PricingPage />} />
+    <Route path="/how-installation-works" element={<HowInstallationWorksPage />} />
+    <Route element={<AppLayout />}>
+      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/customers" element={<CustomersPage />} />
+      <Route path="/invoices" element={<InvoicesPage />} />
+      <Route path="/inventory" element={<InventoryPage />} />
+      <Route path="/vendors" element={<VendorsPage />} />
+      <Route path="/expenses" element={<ExpensesPage />} />
+      <Route path="/reports" element={<ReportsPage />} />
+      <Route path="/privacy" element={<PrivacyCenterPage />} />
+      <Route path="/audit-logs" element={<AuditLogsPage />} />
+      <Route path="/evidence-vault" element={<EvidenceVaultPage />} />
+      <Route path="/inspection-mode" element={<InspectionModePage />} />
+      <Route path="/health" element={<HealthCheckPage />} />
+      <Route path="/system-status" element={<SystemStatusPage />} />
+      <Route path="/design-principles" element={<DesignPrinciplesPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+    </Route>
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <OfflineBanner />
-        <PWAInstallPrompt />
-        <DesktopModeIndicator />
-        <BrowserRouter>
-          <AuthProvider>
-            <BusinessProvider>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/how-installation-works" element={<HowInstallationWorksPage />} />
-                <Route element={<AppLayout />}>
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/customers" element={<CustomersPage />} />
-                  <Route path="/invoices" element={<InvoicesPage />} />
-                  <Route path="/inventory" element={<InventoryPage />} />
-                  <Route path="/vendors" element={<VendorsPage />} />
-                  <Route path="/expenses" element={<ExpensesPage />} />
-                  <Route path="/reports" element={<ReportsPage />} />
-                  <Route path="/privacy" element={<PrivacyCenterPage />} />
-                  <Route path="/audit-logs" element={<AuditLogsPage />} />
-                  <Route path="/evidence-vault" element={<EvidenceVaultPage />} />
-                  <Route path="/inspection-mode" element={<InspectionModePage />} />
-                  <Route path="/health" element={<HealthCheckPage />} />
-                  <Route path="/system-status" element={<SystemStatusPage />} />
-                  <Route path="/design-principles" element={<DesignPrinciplesPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BusinessProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <OfflineBanner />
+          {/* Only show PWA install prompt in web mode, not desktop */}
+          {shouldEnablePWA() && <PWAInstallPrompt />}
+          <DesktopModeIndicator />
+          <Router>
+            <AuthProvider>
+              <BusinessProvider>
+                <AppRoutes />
+              </BusinessProvider>
+            </AuthProvider>
+          </Router>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

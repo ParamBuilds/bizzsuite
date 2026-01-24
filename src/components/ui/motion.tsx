@@ -95,55 +95,56 @@ interface MotionContainerProps extends HTMLMotionProps<'div'> {
   delay?: number;
 }
 
-export const MotionContainer: React.FC<MotionContainerProps> = ({ 
-  children, 
-  delay = 0,
-  ...props 
-}) => (
-  <motion.div
-    initial="hidden"
-    animate="visible"
-    variants={staggerContainer}
-    transition={{ delayChildren: delay }}
-    {...props}
-  >
-    {children}
-  </motion.div>
+export const MotionContainer = React.forwardRef<HTMLDivElement, MotionContainerProps>(
+  ({ children, delay = 0, ...props }, ref) => (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+      transition={{ delayChildren: delay }}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  )
 );
+MotionContainer.displayName = 'MotionContainer';
 
 // Animated item component
-export const MotionItem: React.FC<MotionContainerProps> = ({ 
-  children, 
-  ...props 
-}) => (
-  <motion.div
-    variants={staggerItem}
-    {...props}
-  >
-    {children}
-  </motion.div>
+export const MotionItem = React.forwardRef<HTMLDivElement, MotionContainerProps>(
+  ({ children, ...props }, ref) => (
+    <motion.div
+      ref={ref}
+      variants={staggerItem}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  )
 );
+MotionItem.displayName = 'MotionItem';
 
 // Animated card with hover effect
 interface MotionCardProps extends HTMLMotionProps<'div'> {
   children: React.ReactNode;
 }
 
-export const MotionCard: React.FC<MotionCardProps> = ({ 
-  children,
-  className,
-  ...props 
-}) => (
-  <motion.div
-    variants={staggerItem}
-    whileHover={hoverScale}
-    whileTap={tapScale}
-    className={className}
-    {...props}
-  >
-    {children}
-  </motion.div>
+export const MotionCard = React.forwardRef<HTMLDivElement, MotionCardProps>(
+  ({ children, className, ...props }, ref) => (
+    <motion.div
+      ref={ref}
+      variants={staggerItem}
+      whileHover={hoverScale}
+      whileTap={tapScale}
+      className={className}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  )
 );
+MotionCard.displayName = 'MotionCard';
 
 // Animated page wrapper
 interface PageWrapperProps {
@@ -151,40 +152,42 @@ interface PageWrapperProps {
   className?: string;
 }
 
-export const PageWrapper: React.FC<PageWrapperProps> = ({ 
-  children,
-  className = ''
-}) => (
-  <motion.div
-    initial="initial"
-    animate="animate"
-    exit="exit"
-    variants={pageTransition}
-    className={className}
-  >
-    {children}
-  </motion.div>
+export const PageWrapper = React.forwardRef<HTMLDivElement, PageWrapperProps>(
+  ({ children, className = '' }, ref) => (
+    <motion.div
+      ref={ref}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageTransition}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
 );
+PageWrapper.displayName = 'PageWrapper';
 
 // Scroll-triggered animation wrapper
 interface ScrollRevealProps extends HTMLMotionProps<'div'> {
   children: React.ReactNode;
 }
 
-export const ScrollReveal: React.FC<ScrollRevealProps> = ({ 
-  children,
-  ...props 
-}) => (
-  <motion.div
-    initial="hidden"
-    whileInView="visible"
-    viewport={{ once: true, margin: '-50px' }}
-    variants={fadeInUp}
-    {...props}
-  >
-    {children}
-  </motion.div>
+export const ScrollReveal = React.forwardRef<HTMLDivElement, ScrollRevealProps>(
+  ({ children, ...props }, ref) => (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-50px' }}
+      variants={fadeInUp}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  )
 );
+ScrollReveal.displayName = 'ScrollReveal';
 
 // Counter animation for numbers
 interface AnimatedCounterProps {

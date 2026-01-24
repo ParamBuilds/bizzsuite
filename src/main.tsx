@@ -1,9 +1,13 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { shouldRegisterServiceWorker, logDesktopStatus } from "./lib/desktop-mode";
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
+// Log desktop mode status for debugging
+logDesktopStatus();
+
+// Register Service Worker for PWA - ONLY in web mode (not desktop/file://)
+if (shouldRegisterServiceWorker()) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
@@ -34,6 +38,8 @@ if ('serviceWorker' in navigator) {
       }
     });
   });
+} else {
+  console.log('[Desktop Mode] Service Worker registration skipped (file:// protocol)');
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

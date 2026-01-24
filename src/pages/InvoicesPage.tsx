@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, FileText, MoreHorizontal, Pencil, Trash2, Eye, Send, CheckCircle } from 'lucide-react';
+import { Plus, Search, FileText, MoreHorizontal, Pencil, Trash2, Eye, Send, CheckCircle, Download } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +42,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { generateInvoicePDF } from '@/lib/pdf-generator';
 
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
 
@@ -222,6 +223,59 @@ export default function InvoicesPage() {
     },
     onError: (error) => toast.error(error.message),
   });
+
+  const handleDownloadPDF = async (invoiceId: string) => {
+    try {
+      // Fetch invoice with customer and items
+      const { data: invoiceData, error: invoiceError } = await supabase
+        .from('invoices')
+        .select(`
+          *,
+          customers (name, email, phone, address, gstin)
+        `)
+        .eq('id', invoiceId)
+        .single();
+
+      if (invoiceError) throw invoiceError;
+
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('invoice_items')
+        .select('*')
+        .eq('invoice_id', invoiceId);
+
+      if (itemsError) throw itemsError;
+
+      await generateInvoicePDF({
+        invoice_number: invoiceData.invoice_number,
+        issue_date: invoiceData.issue_date,
+        due_date: invoiceData.due_date,
+        status: invoiceData.status || 'draft',
+        subtotal: Number(invoiceData.subtotal) || 0,
+        tax_amount: Number(invoiceData.tax_amount) || 0,
+        total_amount: Number(invoiceData.total_amount) || 0,
+        notes: invoiceData.notes,
+        customer: invoiceData.customers,
+        business: business ? {
+          name: business.name,
+          email: business.email || undefined,
+          phone: business.phone || undefined,
+          address: business.address || undefined,
+          gstin: business.gstin || undefined,
+        } : undefined,
+        items: itemsData.map(item => ({
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: Number(item.unit_price),
+          gst_rate: Number(item.gst_rate) || 0,
+          gst_amount: Number(item.gst_amount) || 0,
+          total_amount: Number(item.total_amount),
+        })),
+      });
+    } catch (error) {
+      toast.error('Failed to generate PDF');
+      console.error(error);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -583,6 +637,12 @@ export default function InvoicesPage() {
                               Mark as Paid
                             </DropdownMenuItem>
                           )}
+                          <DropdownMenuItem
+                            onClick={() => handleDownloadPDF(invoice.id)}
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            Download PDF
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"

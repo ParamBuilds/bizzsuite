@@ -1,6 +1,7 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppSidebar } from './AppSidebar';
+import { MobileNav } from './MobileNav';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const AppLayout = () => {
@@ -23,12 +24,17 @@ export const AppLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <AppSidebar />
-      <main className="ml-64 flex-1">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-4 border-b border-border bg-background/95 backdrop-blur px-6">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <AppSidebar />
+      </div>
+      <main className="md:ml-64 flex-1">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-border bg-background/95 backdrop-blur px-4 md:px-6 md:justify-end">
+          {/* Mobile Nav Button */}
+          <MobileNav />
           <ThemeToggle />
         </header>
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           <Outlet />
         </div>
       </main>

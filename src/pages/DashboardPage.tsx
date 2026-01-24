@@ -6,7 +6,7 @@ import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { RecentInvoices } from '@/components/dashboard/RecentInvoices';
 import { LowStockAlerts } from '@/components/dashboard/LowStockAlerts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingUp, Users, FileText, Package, AlertTriangle } from 'lucide-react';
+import { IndianRupee, TrendingUp, Users, FileText, Package, AlertTriangle } from 'lucide-react';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 
 export default function DashboardPage() {
@@ -76,7 +76,7 @@ export default function DashboardPage() {
         <StatCard
           title="Revenue This Month"
           value={`₹${(stats?.revenue || 0).toLocaleString()}`}
-          icon={DollarSign}
+          icon={IndianRupee}
           variant="primary"
         />
         <StatCard

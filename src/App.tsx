@@ -16,6 +16,9 @@ import InventoryPage from "./pages/InventoryPage";
 import ExpensesPage from "./pages/ExpensesPage";
 import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
+import VendorsPage from "./pages/VendorsPage";
+import PrivacyCenterPage from "./pages/PrivacyCenterPage";
+import AuditLogsPage from "./pages/AuditLogsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,8 +40,11 @@ const App = () => (
                   <Route path="/customers" element={<CustomersPage />} />
                   <Route path="/invoices" element={<InvoicesPage />} />
                   <Route path="/inventory" element={<InventoryPage />} />
+                  <Route path="/vendors" element={<VendorsPage />} />
                   <Route path="/expenses" element={<ExpensesPage />} />
                   <Route path="/reports" element={<ReportsPage />} />
+                  <Route path="/privacy" element={<PrivacyCenterPage />} />
+                  <Route path="/audit-logs" element={<AuditLogsPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />

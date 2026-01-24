@@ -20,7 +20,8 @@ import {
   Eye,
   FileText,
   Activity,
-  Database
+  Database,
+  Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageWrapper, MotionContainer, MotionItem } from '@/components/ui/motion';
@@ -45,7 +46,7 @@ const eventTypeStyles: Record<string, string> = {
 export default function AuditLogsPage() {
   const [filter, setFilter] = useState<string>('all');
   const [showLocalLogs, setShowLocalLogs] = useState(true);
-  const { seedSecurityData, isSeeding } = useSeedSecurityData();
+  const { seedSecurityData, isSeeding, clearSecurityData, isClearing } = useSeedSecurityData();
   
   // Fetch Supabase audit logs
   const { data: supabaseAuditLogs, isLoading: isLoadingSupabase, refetch: refetchSupabase } = useQuery({
@@ -111,7 +112,11 @@ export default function AuditLogsPage() {
 
   const handleSeedData = async () => {
     await seedSecurityData();
-    // Refetch all data after seeding
+    await Promise.all([refetchLocal(), refetchSupabase(), refetchSecurity()]);
+  };
+
+  const handleClearData = async () => {
+    await clearSecurityData();
     await Promise.all([refetchLocal(), refetchSupabase(), refetchSecurity()]);
   };
 
@@ -158,14 +163,24 @@ export default function AuditLogsPage() {
                 Immutable audit trail for compliance and security monitoring
               </p>
             </div>
-            <Button onClick={handleExportLogs} variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              Export Logs (CSV)
-            </Button>
-            <Button onClick={handleSeedData} disabled={isSeeding}>
-              <Database className="mr-2 h-4 w-4" />
-              {isSeeding ? 'Seeding...' : 'Seed Demo Data'}
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleExportLogs} variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
+              <Button onClick={handleSeedData} disabled={isSeeding || isClearing}>
+                <Database className="mr-2 h-4 w-4" />
+                {isSeeding ? 'Seeding...' : 'Seed Demo Data'}
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleClearData} 
+                disabled={isSeeding || isClearing}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {isClearing ? 'Clearing...' : 'Clear Demo Data'}
+              </Button>
+            </div>
           </div>
         </MotionItem>
 

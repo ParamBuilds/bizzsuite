@@ -209,5 +209,71 @@ export const useSeedData = () => {
     },
   });
 
-  return seedMutation;
+  const clearMutation = useMutation({
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Please sign in first');
+
+      const businessId = business?.id;
+      if (!businessId) throw new Error('No business found');
+
+      // Delete invoice items first (foreign key constraint)
+      const { data: invoices } = await supabase
+        .from('invoices')
+        .select('id')
+        .eq('business_id', businessId);
+      
+      if (invoices && invoices.length > 0) {
+        const invoiceIds = invoices.map(inv => inv.id);
+        await supabase
+          .from('invoice_items')
+          .delete()
+          .in('invoice_id', invoiceIds);
+      }
+
+      // Delete invoices
+      const { error: invoicesError } = await supabase
+        .from('invoices')
+        .delete()
+        .eq('business_id', businessId);
+      if (invoicesError) throw invoicesError;
+
+      // Delete expenses
+      const { error: expensesError } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('business_id', businessId);
+      if (expensesError) throw expensesError;
+
+      // Delete products/services
+      const { error: productsError } = await supabase
+        .from('products_or_services')
+        .delete()
+        .eq('business_id', businessId);
+      if (productsError) throw productsError;
+
+      // Delete customers
+      const { error: customersError } = await supabase
+        .from('customers')
+        .delete()
+        .eq('business_id', businessId);
+      if (customersError) throw customersError;
+
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      toast.success('Demo data cleared successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to clear demo data: ${error.message}`);
+    },
+  });
+
+  return { 
+    seedMutation,
+    clearMutation,
+    isSeeding: seedMutation.isPending,
+    isClearing: clearMutation.isPending
+  };
 };

@@ -16,7 +16,8 @@ import {
   FileText,
   AlertTriangle,
   Lock,
-  Database
+  Database,
+  Trash2
 } from 'lucide-react';
 import { 
   getAllEvidence, 
@@ -55,7 +56,7 @@ export default function EvidenceVaultPage() {
     valid: number;
     invalid: number;
   } | null>(null);
-  const { seedSecurityData, isSeeding } = useSeedSecurityData();
+  const { seedSecurityData, isSeeding, clearSecurityData, isClearing } = useSeedSecurityData();
 
   useEffect(() => {
     loadEntries();
@@ -109,6 +110,11 @@ export default function EvidenceVaultPage() {
     loadEntries();
   };
 
+  const handleClearData = async () => {
+    await clearSecurityData();
+    loadEntries();
+  };
+
   return (
     <PageWrapper className="space-y-6">
       <MotionContainer>
@@ -132,9 +138,17 @@ export default function EvidenceVaultPage() {
                 <Download className="mr-2 h-4 w-4" />
                 Export CSV
               </Button>
-              <Button onClick={handleSeedData} disabled={isSeeding}>
+              <Button onClick={handleSeedData} disabled={isSeeding || isClearing}>
                 <Database className="mr-2 h-4 w-4" />
                 {isSeeding ? 'Seeding...' : 'Seed Demo Data'}
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleClearData} 
+                disabled={isSeeding || isClearing}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {isClearing ? 'Clearing...' : 'Clear Demo Data'}
               </Button>
             </div>
           </div>

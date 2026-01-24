@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Building2, IndianRupee, Save, Database, Loader2, RefreshCw, Sparkles, CheckCircle2, Monitor } from 'lucide-react';
+import { Building2, IndianRupee, Save, Database, Loader2, RefreshCw, Sparkles, CheckCircle2, Monitor, Trash2 } from 'lucide-react';
 import { isDesktopMode } from '@/lib/desktop-mode';
 import { FINAL_PRODUCT_MODE } from '@/lib/final-product-mode';
 import confetti from 'canvas-confetti';
@@ -401,7 +401,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Demo Data</CardTitle>
-              <CardDescription>Add sample data to explore the platform features</CardDescription>
+              <CardDescription>Add or remove sample data to explore the platform features</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-muted/50 rounded-lg p-4">
@@ -413,25 +413,45 @@ export default function SettingsPage() {
                   <li>• 7 expense entries across categories</li>
                 </ul>
               </div>
-              <Button 
-                onClick={() => seedData.mutate()} 
-                disabled={seedData.isPending}
-                className="w-full"
-              >
-                {seedData.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Adding Demo Data...
-                  </>
-                ) : (
-                  <>
-                    <Database className="mr-2 h-4 w-4" />
-                    Add Demo Data
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => seedData.seedMutation.mutate()} 
+                  disabled={seedData.isSeeding || seedData.isClearing}
+                  className="flex-1"
+                >
+                  {seedData.isSeeding ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <Database className="mr-2 h-4 w-4" />
+                      Add Demo Data
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={() => seedData.clearMutation.mutate()} 
+                  disabled={seedData.isSeeding || seedData.isClearing}
+                  className="flex-1"
+                >
+                  {seedData.isClearing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Clearing...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Clear Demo Data
+                    </>
+                  )}
+                </Button>
+              </div>
               <p className="text-xs text-muted-foreground text-center">
-                Note: Running this multiple times will create duplicate entries
+                Warning: Clear will remove all customers, products, invoices, and expenses
               </p>
             </CardContent>
           </Card>

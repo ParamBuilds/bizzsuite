@@ -52,8 +52,15 @@ export default function PricingPage() {
   const handlePayment = () => {
     const link = generateOfflineDownloadPaymentLink();
     
-    // Try to open UPI intent
-    window.open(link, '_blank');
+    // Check if on mobile device
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // On mobile, try to open UPI intent directly
+      window.location.href = link;
+    }
+    
+    // Always show payment instructions (for desktop or as fallback on mobile)
     setShowPaymentInstructions(true);
   };
 

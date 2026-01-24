@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface StatCardProps {
   title: string;
@@ -30,24 +31,41 @@ const iconVariants = {
 
 export const StatCard = ({ title, value, icon: Icon, trend, variant = 'default' }: StatCardProps) => {
   return (
-    <div className={cn('stat-card animate-fade-in', variantStyles[variant])}>
+    <motion.div 
+      className={cn('stat-card', variantStyles[variant])}
+      whileHover={{ 
+        scale: 1.02, 
+        boxShadow: '0 10px 20px -5px rgba(0,0,0,0.1)',
+        transition: { duration: 0.2 }
+      }}
+      whileTap={{ scale: 0.98 }}
+    >
       <div className="flex items-start justify-between">
         <div>
           <p className="metric-label">{title}</p>
           <p className="metric-value mt-2">{value}</p>
           {trend && (
-            <p className={cn(
-              'text-xs font-medium mt-2',
-              trend.isPositive ? 'text-success' : 'text-destructive'
-            )}>
+            <motion.p 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className={cn(
+                'text-xs font-medium mt-2',
+                trend.isPositive ? 'text-success' : 'text-destructive'
+              )}
+            >
               {trend.isPositive ? '+' : ''}{trend.value}% from last month
-            </p>
+            </motion.p>
           )}
         </div>
-        <div className={cn('p-2.5 rounded-lg', iconVariants[variant])}>
+        <motion.div 
+          className={cn('p-2.5 rounded-lg', iconVariants[variant])}
+          whileHover={{ rotate: 5 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
           <Icon className="h-5 w-5" />
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };

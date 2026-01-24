@@ -6,8 +6,9 @@ import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { RecentInvoices } from '@/components/dashboard/RecentInvoices';
 import { LowStockAlerts } from '@/components/dashboard/LowStockAlerts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, TrendingUp, Users, FileText, Package, AlertTriangle } from 'lucide-react';
+import { IndianRupee, TrendingUp, Users, FileText, AlertTriangle } from 'lucide-react';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { MotionContainer, MotionItem, PageWrapper, ScrollReveal } from '@/components/ui/motion';
 
 export default function DashboardPage() {
   const { business } = useBusiness();
@@ -63,84 +64,102 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="page-header">Dashboard</h1>
-        <p className="page-description">
-          Welcome back! Here's your business overview for {format(today, 'MMMM yyyy')}.
-        </p>
-      </div>
+    <PageWrapper className="space-y-6">
+      <MotionContainer>
+        <MotionItem>
+          <div>
+            <h1 className="page-header">Dashboard</h1>
+            <p className="page-description">
+              Welcome back! Here's your business overview for {format(today, 'MMMM yyyy')}.
+            </p>
+          </div>
+        </MotionItem>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Revenue This Month"
-          value={`₹${(stats?.revenue || 0).toLocaleString()}`}
-          icon={IndianRupee}
-          variant="primary"
-        />
-        <StatCard
-          title="Profit This Month"
-          value={`₹${(stats?.profit || 0).toLocaleString()}`}
-          icon={TrendingUp}
-          variant="success"
-        />
-        <StatCard
-          title="Total Customers"
-          value={stats?.customerCount || 0}
-          icon={Users}
-          variant="accent"
-        />
-        <StatCard
-          title="Pending Invoices"
-          value={pendingInvoices || 0}
-          icon={FileText}
-          variant="warning"
-        />
-      </div>
+        {/* Stats Grid */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
+          <MotionItem>
+            <StatCard
+              title="Revenue This Month"
+              value={`₹${(stats?.revenue || 0).toLocaleString('en-IN')}`}
+              icon={IndianRupee}
+              variant="primary"
+            />
+          </MotionItem>
+          <MotionItem>
+            <StatCard
+              title="Profit This Month"
+              value={`₹${(stats?.profit || 0).toLocaleString('en-IN')}`}
+              icon={TrendingUp}
+              variant="success"
+            />
+          </MotionItem>
+          <MotionItem>
+            <StatCard
+              title="Total Customers"
+              value={stats?.customerCount || 0}
+              icon={Users}
+              variant="accent"
+            />
+          </MotionItem>
+          <MotionItem>
+            <StatCard
+              title="Pending Invoices"
+              value={pendingInvoices || 0}
+              icon={FileText}
+              variant="warning"
+            />
+          </MotionItem>
+        </div>
+      </MotionContainer>
 
       {/* Alerts Banner */}
       {(stats?.lowStockCount || 0) > 0 && (
-        <div className="flex items-center gap-4 p-4 rounded-lg bg-warning/10 border border-warning/20">
-          <AlertTriangle className="h-5 w-5 text-warning" />
-          <div>
-            <p className="font-medium text-warning">Stock Alert</p>
-            <p className="text-sm text-muted-foreground">
-              {stats?.lowStockCount} product(s) are running low on stock
-            </p>
+        <ScrollReveal>
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-warning/10 border border-warning/20">
+            <AlertTriangle className="h-5 w-5 text-warning" />
+            <div>
+              <p className="font-medium text-warning">Stock Alert</p>
+              <p className="text-sm text-muted-foreground">
+                {stats?.lowStockCount} product(s) are running low on stock
+              </p>
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
       )}
 
       {/* Charts and Lists */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Revenue & Profit Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RevenueChart />
-          </CardContent>
-        </Card>
+      <ScrollReveal>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Revenue & Profit Trend</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RevenueChart />
+            </CardContent>
+          </Card>
 
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Low Stock Alerts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LowStockAlerts />
+            </CardContent>
+          </Card>
+        </div>
+      </ScrollReveal>
+
+      <ScrollReveal>
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Low Stock Alerts</CardTitle>
+            <CardTitle className="text-lg font-semibold">Recent Invoices</CardTitle>
           </CardHeader>
           <CardContent>
-            <LowStockAlerts />
+            <RecentInvoices />
           </CardContent>
         </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Recent Invoices</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RecentInvoices />
-        </CardContent>
-      </Card>
-    </div>
+      </ScrollReveal>
+    </PageWrapper>
   );
 }

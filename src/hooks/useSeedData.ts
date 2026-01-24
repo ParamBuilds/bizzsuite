@@ -35,24 +35,69 @@ const sampleExpenses = [
 ];
 
 export const useSeedData = () => {
-  const { business } = useBusiness();
+  const { business, refetch } = useBusiness();
   const queryClient = useQueryClient();
 
   const seedMutation = useMutation({
     mutationFn: async () => {
-      if (!business?.id) throw new Error('No business found');
+      let businessId = business?.id;
+
+      // If no business exists, create one
+      if (!businessId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Please sign in first');
+
+        // Create a new business
+        const { data: newBusiness, error: bizError } = await supabase
+          .from('businesses')
+          .insert({ name: 'My Business' })
+          .select()
+          .single();
+        
+        if (bizError) throw bizError;
+        businessId = newBusiness.id;
+
+        // Check if profile exists
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (existingProfile) {
+          // Update existing profile with business_id
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ business_id: businessId })
+            .eq('user_id', user.id);
+          if (updateError) throw updateError;
+        } else {
+          // Create profile
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: user.id,
+              business_id: businessId,
+              role: 'owner'
+            });
+          if (profileError) throw profileError;
+        }
+
+        // Refetch business context
+        await refetch();
+      }
 
       // Insert customers
       const { data: customersData, error: customersError } = await supabase
         .from('customers')
-        .insert(sampleCustomers.map(c => ({ ...c, business_id: business.id })))
+        .insert(sampleCustomers.map(c => ({ ...c, business_id: businessId })))
         .select();
       if (customersError) throw customersError;
 
       // Insert products/services
       const { data: productsData, error: productsError } = await supabase
         .from('products_or_services')
-        .insert(sampleProducts.map(p => ({ ...p, business_id: business.id, is_active: true })))
+        .insert(sampleProducts.map(p => ({ ...p, business_id: businessId, is_active: true })))
         .select();
       if (productsError) throw productsError;
 
@@ -66,7 +111,7 @@ export const useSeedData = () => {
           amount: e.amount,
           category: e.category as 'rent' | 'utilities' | 'salaries' | 'marketing' | 'supplies' | 'travel' | 'other',
           vendor: e.vendor,
-          business_id: business.id,
+          business_id: businessId,
           expense_date: date.toISOString().split('T')[0],
         };
       });
@@ -108,7 +153,7 @@ export const useSeedData = () => {
         const { data: invoiceData, error: invoiceError } = await supabase
           .from('invoices')
           .insert({
-            business_id: business.id,
+            business_id: businessId,
             customer_id: customer.id,
             invoice_number: `INV-${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(i + 1).padStart(3, '0')}`,
             status: inv.status,

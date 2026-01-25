@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
+import { ModeSwitcher } from '@/components/ModeSwitcher';
 
 const features = [
   {
@@ -91,8 +92,9 @@ export default function LandingPage() {
 
   return (
     <div className="relative bg-background">
-      {/* Theme toggle */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Mode Switcher & Theme toggle */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <ModeSwitcher />
         <ThemeToggle />
       </div>
 
@@ -103,6 +105,7 @@ export default function LandingPage() {
         buttonText="Start Free Trial"
         navItems={navItems}
         onButtonClick={() => navigate('/auth')}
+        enableCursorAnimation={true}
       />
 
       {/* Features Section */}

@@ -114,15 +114,21 @@ export default function PricingPage() {
 
   return (
     <PageWrapper className="max-w-3xl mx-auto space-y-8">
+      {/* Decorative background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-primary/5 via-accent/5 to-transparent blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-success/5 via-primary/5 to-transparent blur-3xl" />
+      </div>
+      
       <MotionContainer>
         <MotionItem>
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="hover:bg-muted">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="page-header">Get BizSuite Offline Forever</h1>
-              <p className="page-description">One-time payment, lifetime access</p>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Get BizSuite Offline Forever</h1>
+              <p className="text-muted-foreground mt-1">One-time payment, lifetime access</p>
             </div>
           </div>
         </MotionItem>
@@ -166,24 +172,29 @@ export default function PricingPage() {
 
         {/* Offline Forever Plan */}
         <div>
-          <Card className="relative overflow-hidden border-2 border-primary/50">
-            <div className="absolute top-0 right-0 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-bl-xl z-10">
-              Best Value
+          <Card className="relative overflow-hidden border-2 border-primary/50 bg-gradient-to-br from-card via-card to-muted/20 shadow-2xl">
+            <div className="absolute top-0 right-0 px-5 py-2.5 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-sm font-bold rounded-bl-2xl shadow-lg">
+              ✨ Best Value
             </div>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <WifiOff className="h-6 w-6 text-primary" />
-                <CardTitle className="text-2xl">Offline Forever</CardTitle>
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+            <CardHeader className="relative pt-12">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <WifiOff className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl">Offline Forever</CardTitle>
+                  <CardDescription>Download & own forever - works 100% offline</CardDescription>
+                </div>
               </div>
-              <CardDescription>Download & own forever - works 100% offline</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <span className="text-5xl font-bold">₹{PAYMENT_CONFIG.offlineDownloadPrice.toLocaleString('en-IN')}</span>
-                <span className="text-muted-foreground ml-2">one-time payment</span>
+            <CardContent className="relative space-y-6">
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-bold text-foreground">₹{PAYMENT_CONFIG.offlineDownloadPrice.toLocaleString('en-IN')}</span>
+                <span className="text-lg text-muted-foreground">one-time payment</span>
               </div>
               
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {[
                   'Downloadable ZIP with installer',
                   'Works 100% offline - no internet needed',
@@ -194,8 +205,10 @@ export default function PricingPage() {
                   'Free updates for 1 year'
                 ].map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-                    <span>{feature}</span>
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success/10">
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                    </div>
+                    <span className="text-foreground">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -203,14 +216,14 @@ export default function PricingPage() {
               <div className="pt-4">
                 <Button 
                   size="lg"
-                  className="w-full text-lg py-6 relative z-20" 
+                  className="w-full text-lg py-6 bg-gradient-to-r from-primary to-primary/80 hover:shadow-xl hover:shadow-primary/25 transition-all duration-300" 
                   onClick={handlePayment}
                   disabled={isPremium}
                 >
                   <Smartphone className="mr-2 h-5 w-5" />
                   Pay ₹{PAYMENT_CONFIG.offlineDownloadPrice.toLocaleString('en-IN')} with UPI
                 </Button>
-                <p className="text-center text-sm text-muted-foreground mt-2">
+                <p className="text-center text-sm text-muted-foreground mt-3">
                   Supports Google Pay, PhonePe, Paytm & all UPI apps
                 </p>
               </div>

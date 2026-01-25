@@ -20,8 +20,29 @@ import { toast } from 'sonner';
 // Version changelog
 const VERSION_CHANGELOG = [
   {
-    version: '1.1.0',
+    version: '1.3.0',
     date: '2026-01-25',
+    highlights: [
+      'Fixed network status detection (actual connectivity check)',
+      'Enhanced landing page and pricing page design',
+      'Improved visual aesthetics with gradients and animations',
+      'Better health check accuracy when offline',
+    ],
+    isNew: true
+  },
+  {
+    version: '1.2.0',
+    date: '2026-01-25',
+    highlights: [
+      'Fixed auto-update detection (isPackaged fix)',
+      'Version display correction in settings',
+      'Installer download URL corrections',
+    ],
+    isNew: false
+  },
+  {
+    version: '1.1.0',
+    date: '2026-01-24',
     highlights: [
       'Added manual "Check for Updates" button',
       'Fixed sidebar scrolling on smaller screens',
@@ -30,7 +51,7 @@ const VERSION_CHANGELOG = [
       'Indian Rupee icon throughout the app',
       'Privacy Center grievance officer updated',
     ],
-    isNew: true
+    isNew: false
   },
   {
     version: '1.0.0',

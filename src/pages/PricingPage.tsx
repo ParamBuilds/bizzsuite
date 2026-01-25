@@ -19,14 +19,15 @@ import {
   Smartphone,
   Copy,
   Mail,
-  HelpCircle
+  HelpCircle,
+  Loader2
 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { activateLicense, generateOfflineDownloadPaymentLink, PAYMENT_CONFIG } from '@/lib/subscription';
 import { MotionContainer, MotionItem, PageWrapper } from '@/components/ui/motion';
 import { ActivationKeyToast } from '@/components/ActivationKeyToast';
-import { generateActivationKey } from '@/lib/license-download';
 import { downloadInstaller, getInstallerInfo, detectPlatform, getAllInstallers } from '@/lib/installer-download';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function PricingPage() {
   const navigate = useNavigate();
@@ -38,6 +39,9 @@ export default function PricingPage() {
     visible: false,
     key: ''
   });
+  const [paymentEmail, setPaymentEmail] = useState('');
+  const [isSendingLicense, setIsSendingLicense] = useState(false);
+  const [licenseEmailSent, setLicenseEmailSent] = useState(false);
 
   const handleActivateLicense = async () => {
     if (!licenseKey.trim()) {
@@ -62,22 +66,55 @@ export default function PricingPage() {
     }
   };
 
-  // Simulate payment success - in production this would be triggered by payment webhook
+  // Validate email and send license key via edge function
   const handlePaymentSuccess = async () => {
-    const newKey = generateActivationKey();
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!paymentEmail.trim()) {
+      toast.error('Please enter your email address to receive the license key');
+      return;
+    }
+    if (!emailRegex.test(paymentEmail.trim())) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    setIsSendingLicense(true);
     
-    // Activate the license immediately
-    const result = await activateLicense(newKey);
-    
-    if (result.success) {
-      await refresh();
-      // Show the persistent activation toast
-      setActivationToast({ visible: true, key: newKey });
-      // Store the key for recovery
-      localStorage.setItem('last-activated-key', newKey);
-      localStorage.setItem('license-generated-at', new Date().toISOString());
-    } else {
-      toast.error('Failed to generate license. Please contact support.');
+    try {
+      // Call edge function to generate and send license key
+      const { data, error } = await supabase.functions.invoke('send-license-key', {
+        body: { email: paymentEmail.trim() }
+      });
+
+      if (error) {
+        console.error('Error sending license:', error);
+        toast.error('Failed to send license key. Please contact support.');
+        return;
+      }
+
+      if (data?.success && data?.licenseKey) {
+        // Activate the license
+        const result = await activateLicense(data.licenseKey);
+        
+        if (result.success) {
+          await refresh();
+          setActivationToast({ visible: true, key: data.licenseKey });
+          localStorage.setItem('last-activated-key', data.licenseKey);
+          localStorage.setItem('license-generated-at', new Date().toISOString());
+          setLicenseEmailSent(true);
+          toast.success(`License key sent to ${paymentEmail}! Check your email.`);
+        } else {
+          toast.error('Failed to activate license. Please try entering the key manually.');
+        }
+      } else {
+        toast.error(data?.error || 'Failed to generate license. Please contact support.');
+      }
+    } catch (err) {
+      console.error('License generation error:', err);
+      toast.error('Network error. Please try again or contact support.');
+    } finally {
+      setIsSendingLicense(false);
     }
   };
 
@@ -269,20 +306,55 @@ export default function PricingPage() {
 
                 <Separator />
 
-                <div className="bg-success/10 p-4 rounded-lg border border-success/20">
-                  <p className="text-sm font-medium mb-3">
-                    <strong>Complete Payment Instantly:</strong>
+                <div className="bg-success/10 p-4 rounded-lg border border-success/20 space-y-4">
+                  <p className="text-sm font-medium">
+                    <strong>After Payment - Enter your email to receive license key:</strong>
                   </p>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-email">Email Address</Label>
+                    <Input
+                      id="payment-email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={paymentEmail}
+                      onChange={(e) => setPaymentEmail(e.target.value)}
+                      disabled={isSendingLicense || licenseEmailSent}
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      We'll send your license key to this email
+                    </p>
+                  </div>
+
                   <Button 
                     onClick={handlePaymentSuccess}
                     className="w-full bg-success hover:bg-success/90 text-success-foreground"
+                    disabled={isSendingLicense || licenseEmailSent || !paymentEmail.trim()}
                   >
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    I've Completed Payment - Generate My License
+                    {isSendingLicense ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending License Key...
+                      </>
+                    ) : licenseEmailSent ? (
+                      <>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        License Key Sent!
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="mr-2 h-4 w-4" />
+                        I've Paid - Send My License Key
+                      </>
+                    )}
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    Your license key will appear immediately after clicking
-                  </p>
+                  
+                  {licenseEmailSent && (
+                    <p className="text-xs text-success text-center">
+                      ✓ Check your email ({paymentEmail}) for the license key!
+                    </p>
+                  )}
                 </div>
 
                 {/* Support Section */}

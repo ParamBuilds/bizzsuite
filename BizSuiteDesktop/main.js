@@ -10,7 +10,8 @@ try {
 }
 
 // Parse command line arguments
-const isDebug = process.argv.includes('--debug') || process.env.NODE_ENV !== 'production';
+// In packaged app, app.isPackaged is true; in dev, it's false
+const isDebug = process.argv.includes('--debug') || !require('electron').app.isPackaged;
 
 let mainWindow = null;
 

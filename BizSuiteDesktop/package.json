@@ -38,7 +38,8 @@
     "publish": {
       "provider": "github",
       "owner": "ParamBuilds",
-      "repo": "bizzsuite"
+      "repo": "bizzsuite",
+      "releaseType": "release"
     },
     "win": {
       "target": [

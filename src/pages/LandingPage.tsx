@@ -105,7 +105,6 @@ export default function LandingPage() {
         buttonText="Start Free Trial"
         navItems={navItems}
         onButtonClick={() => navigate('/auth')}
-        enableCursorAnimation={true}
       />
 
       {/* Features Section */}

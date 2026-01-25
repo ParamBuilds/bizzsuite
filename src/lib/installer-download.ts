@@ -79,18 +79,21 @@ export function getAllInstallers(): InstallerInfo[] {
 }
 
 // Download the actual installer file
-export function downloadInstaller(platform?: 'windows' | 'mac' | 'linux' | 'pwa'): boolean {
+export function downloadInstaller(platform?: 'windows' | 'mac' | 'linux' | 'pwa'): { success: boolean; message?: string } {
   const targetPlatform = platform === 'pwa' ? 'windows' : (platform || 'windows');
   const installer = getInstallerInfo(targetPlatform);
   
   // If real installer URL is available, redirect to it
   if (installer.isAvailable && installer.downloadUrl) {
     window.open(installer.downloadUrl, '_blank');
-    return true;
+    return { success: true };
   }
   
-  // Installer not available - return false to trigger fallback UI
-  return false;
+  // Installer not available - return message for user
+  return { 
+    success: false, 
+    message: `The ${targetPlatform} installer is not yet available. Please contact ${INSTALLER_CONFIG.supportEmail} for assistance or check back later.`
+  };
 }
 
 // Download the installation guide as a text file (secondary action)

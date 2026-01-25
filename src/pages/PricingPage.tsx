@@ -358,55 +358,37 @@ export default function PricingPage() {
                   <p><strong>Step 3:</strong> Activate using your key or license file</p>
                 </div>
 
-                {/* Primary Download Button */}
-                {getInstallerInfo().isAvailable ? (
-                  <Button 
-                    size="lg"
-                    className="w-full bg-success hover:bg-success/90 text-success-foreground"
-                    onClick={() => {
-                      const platform = detectPlatform();
-                      const success = downloadInstaller(platform === 'pwa' ? 'windows' : platform);
-                      if (success) {
-                        toast.success('Installer download started');
-                      } else {
-                        toast.error('Download failed. Please try again.');
-                      }
-                    }}
-                  >
-                    <Download className="mr-2 h-5 w-5" />
-                    Download Installer ({getInstallerInfo().fileName})
-                  </Button>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-warning bg-warning/10 p-3 rounded-lg border border-warning/20">
-                      <HelpCircle className="h-5 w-5 flex-shrink-0" />
-                      <span>Installer not available yet. Please contact support or try again later.</span>
-                    </div>
-                    <Button 
-                      size="lg"
-                      variant="outline"
-                      className="w-full"
-                      asChild
-                    >
-                      <a href={`mailto:parambuilds@proton.me?subject=BizSuite%20Installer%20Request&body=Hi%2C%0A%0AI%20purchased%20BizSuite%20and%20need%20the%20installer.%0A%0AMy%20license%20key%3A%20${subscription?.licenseKey || 'Not available'}%0A%0A`}>
-                        <Mail className="mr-2 h-5 w-5" />
-                        Contact Support for Installer
-                      </a>
-                    </Button>
-                  </div>
-                )}
+{/* Primary Download Button */}
+                <Button 
+                  size="lg"
+                  className="w-full bg-success hover:bg-success/90 text-success-foreground"
+                  onClick={() => {
+                    const platform = detectPlatform();
+                    const result = downloadInstaller(platform === 'pwa' ? 'windows' : platform);
+                    if (result.success) {
+                      toast.success('Installer download started');
+                    } else {
+                      toast.error(result.message || 'Installer not available. Please contact support.');
+                    }
+                  }}
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Download Installer ({getInstallerInfo().fileName})
+                </Button>
 
                 {/* Other Platforms */}
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {getAllInstallers().filter(i => i.isAvailable).map((installer) => (
+                  {getAllInstallers().map((installer) => (
                     <Button
                       key={installer.platform}
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        const success = downloadInstaller(installer.platform);
-                        if (success) {
+                        const result = downloadInstaller(installer.platform);
+                        if (result.success) {
                           toast.success(`${installer.platform} installer download started`);
+                        } else {
+                          toast.error(result.message || 'Installer not available.');
                         }
                       }}
                     >

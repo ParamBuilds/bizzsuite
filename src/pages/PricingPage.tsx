@@ -202,7 +202,7 @@ export default function PricingPage() {
                   'All features included',
                   'No recurring fees ever',
                   'Local data storage - your data stays with you',
-                  'Free updates for 1 year'
+                  'Free lifetime updates'
                 ].map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success/10">

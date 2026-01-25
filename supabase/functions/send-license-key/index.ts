@@ -135,7 +135,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <ul style="color: #52525b; margin: 0; padding-left: 20px; line-height: 1.8;">
                   <li>✅ Lifetime access to all features</li>
                   <li>✅ Works 100% offline</li>
-                  <li>✅ Free updates for 1 year</li>
+                  <li>✅ Free lifetime updates</li>
                   <li>✅ Local data storage</li>
                   <li>✅ No recurring fees</li>
                 </ul>

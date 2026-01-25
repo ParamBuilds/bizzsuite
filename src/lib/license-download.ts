@@ -4,7 +4,8 @@ import { generateSampleLicenseFile, type LicenseFile } from './air-gapped-activa
 // Create a license file from an activation key
 export function createLicenseFile(licenseKey: string): LicenseFile {
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 year
+  // Lifetime license - 99 years (effectively forever)
+  const expiresAt = new Date(now.getTime() + 99 * 365 * 24 * 60 * 60 * 1000);
 
   return {
     version: '1.0',

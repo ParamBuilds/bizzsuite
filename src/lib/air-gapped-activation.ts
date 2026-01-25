@@ -128,7 +128,8 @@ export function isAirGappedMode(): boolean {
 // Generate a sample license file for testing
 export function generateSampleLicenseFile(): LicenseFile {
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+  // Lifetime license - 99 years (effectively forever)
+  const expiresAt = new Date(now.getTime() + 99 * 365 * 24 * 60 * 60 * 1000);
   
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const segments: string[] = [];

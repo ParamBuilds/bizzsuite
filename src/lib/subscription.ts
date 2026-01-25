@@ -148,7 +148,8 @@ export async function activateLicense(licenseKey: string): Promise<{ success: bo
     }
 
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 year
+    // Lifetime license - 99 years (effectively forever)
+    const expiresAt = new Date(now.getTime() + 99 * 365 * 24 * 60 * 60 * 1000);
 
     await sub.patch({
       status: 'active',
@@ -157,7 +158,7 @@ export async function activateLicense(licenseKey: string): Promise<{ success: bo
       expires_at: expiresAt.toISOString()
     });
 
-    return { success: true, message: 'License activated successfully! Valid for 1 year.' };
+    return { success: true, message: 'License activated successfully! Lifetime access granted.' };
   } catch (error: any) {
     return { success: false, message: error.message };
   }

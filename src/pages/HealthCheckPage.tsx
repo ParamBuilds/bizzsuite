@@ -21,7 +21,7 @@ import {
   Clock,
   Activity
 } from 'lucide-react';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useNetworkStatus } from '@/hooks/useOnlineStatus';
 import { getDatabase } from '@/lib/offline-db/database';
 import { verifyAuditChain } from '@/lib/offline-db/audit-logger';
 import { getSMTPConfig, getNotificationQueueStats } from '@/lib/email-queue';
@@ -35,7 +35,7 @@ interface HealthStatus {
 }
 
 export default function HealthCheckPage() {
-  const isOnline = useOnlineStatus();
+  const { isOnline, isChecking: isNetworkChecking, refresh: refreshNetwork } = useNetworkStatus();
   const [healthChecks, setHealthChecks] = useState<HealthStatus[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
@@ -45,6 +45,9 @@ export default function HealthCheckPage() {
   const runHealthChecks = async () => {
     setIsRunning(true);
     const checks: HealthStatus[] = [];
+
+    // Refresh network status first
+    const networkOnline = await refreshNetwork();
 
     // Check 1: Local Database
     try {
@@ -65,12 +68,12 @@ export default function HealthCheckPage() {
       });
     }
 
-    // Check 2: Network Status
+    // Check 2: Network Status (using actual connectivity check)
     checks.push({
       name: 'Network Status',
-      status: isOnline ? 'ok' : 'warning',
-      message: isOnline ? 'Online - Cloud sync available' : 'Offline - Changes saved locally',
-      icon: isOnline ? Wifi : WifiOff
+      status: networkOnline ? 'ok' : 'warning',
+      message: networkOnline ? 'Online - Cloud sync available' : 'Offline - Changes saved locally',
+      icon: networkOnline ? Wifi : WifiOff
     });
 
     // Check 3: SMTP Configuration

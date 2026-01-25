@@ -11,6 +11,9 @@ import { cn } from '@/lib/utils';
 export function ModeSwitcher() {
   const { mode, setMode, isOnline, canSwitchMode } = useAppEnvironment();
   
+  // Don't render the switcher in Electron - it's locked to desktop mode
+  if (!canSwitchMode) return null;
+  
   return (
     <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 border border-border/50">
       {/* Desktop Mode Button */}

@@ -1,9 +1,14 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { WifiOff, Cloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { isDesktopMode } from '@/lib/desktop-mode';
 
 export function OfflineBanner() {
   const isOnline = useOnlineStatus();
+  const isDesktop = isDesktopMode();
+
+  // Don't show offline banner in desktop mode - it's designed to work offline
+  if (isDesktop) return null;
 
   return (
     <AnimatePresence>

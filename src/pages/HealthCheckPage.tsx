@@ -3,8 +3,6 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { 
   CheckCircle2, 
@@ -19,28 +17,88 @@ import {
   HardDrive,
   Server,
   Clock,
-  Activity
+  Activity,
+  Users,
+  Package,
+  FileText,
+  Receipt
 } from 'lucide-react';
 import { useNetworkStatus } from '@/hooks/useOnlineStatus';
 import { getDatabase } from '@/lib/offline-db/database';
-import { verifyAuditChain } from '@/lib/offline-db/audit-logger';
+import { verifyAuditChain, getAuditLogs } from '@/lib/offline-db/audit-logger';
 import { getSMTPConfig, getNotificationQueueStats } from '@/lib/email-queue';
 import { MotionContainer, MotionItem, PageWrapper } from '@/components/ui/motion';
+import { supabase } from '@/integrations/supabase/client';
+import { useBusiness } from '@/contexts/BusinessContext';
 
 interface HealthStatus {
   name: string;
   status: 'ok' | 'warning' | 'error' | 'loading';
   message: string;
   icon: any;
+  details?: string;
+}
+
+interface DataCounts {
+  customers: number;
+  products: number;
+  invoices: number;
+  expenses: number;
+  auditLogs: number;
 }
 
 export default function HealthCheckPage() {
   const { isOnline, isChecking: isNetworkChecking, refresh: refreshNetwork } = useNetworkStatus();
+  const { business } = useBusiness();
   const [healthChecks, setHealthChecks] = useState<HealthStatus[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
   const [auditChainValid, setAuditChainValid] = useState<boolean | null>(null);
+  const [auditLogCount, setAuditLogCount] = useState(0);
+  const [dataCounts, setDataCounts] = useState<DataCounts>({ customers: 0, products: 0, invoices: 0, expenses: 0, auditLogs: 0 });
   const [notificationStats, setNotificationStats] = useState({ pending: 0, sent: 0, failed: 0 });
+
+  const getLocalDataCounts = async (): Promise<DataCounts> => {
+    try {
+      const db = await getDatabase();
+      const [customers, products, invoices, expenses, auditLogs] = await Promise.all([
+        db.customers.count().exec(),
+        db.products.count().exec(),
+        db.invoices.count().exec(),
+        db.expenses.count().exec(),
+        db.audit_logs.count().exec()
+      ]);
+      return { customers, products, invoices, expenses, auditLogs };
+    } catch {
+      return { customers: 0, products: 0, invoices: 0, expenses: 0, auditLogs: 0 };
+    }
+  };
+
+  const getSupabaseDataCounts = async (): Promise<DataCounts> => {
+    if (!business?.id) {
+      return { customers: 0, products: 0, invoices: 0, expenses: 0, auditLogs: 0 };
+    }
+
+    try {
+      const [customersRes, productsRes, invoicesRes, expensesRes, auditLogsRes] = await Promise.all([
+        supabase.from('customers').select('id', { count: 'exact', head: true }).eq('business_id', business.id),
+        supabase.from('products_or_services').select('id', { count: 'exact', head: true }).eq('business_id', business.id),
+        supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('business_id', business.id),
+        supabase.from('expenses').select('id', { count: 'exact', head: true }).eq('business_id', business.id),
+        supabase.from('audit_logs').select('id', { count: 'exact', head: true })
+      ]);
+
+      return {
+        customers: customersRes.count || 0,
+        products: productsRes.count || 0,
+        invoices: invoicesRes.count || 0,
+        expenses: expensesRes.count || 0,
+        auditLogs: auditLogsRes.count || 0
+      };
+    } catch {
+      return { customers: 0, products: 0, invoices: 0, expenses: 0, auditLogs: 0 };
+    }
+  };
 
   const runHealthChecks = async () => {
     setIsRunning(true);
@@ -49,14 +107,39 @@ export default function HealthCheckPage() {
     // Refresh network status first
     const networkOnline = await refreshNetwork();
 
-    // Check 1: Local Database
+    // Determine data source mode
+    const appMode = localStorage.getItem('bizsuite_app_mode') || 'online';
+    const isDesktopMode = appMode === 'desktop';
+
+    // Get data counts from appropriate source
+    let counts: DataCounts;
+    let localCounts: DataCounts = { customers: 0, products: 0, invoices: 0, expenses: 0, auditLogs: 0 };
+
+    try {
+      localCounts = await getLocalDataCounts();
+    } catch (e) {
+      console.error('Failed to get local counts:', e);
+    }
+
+    if (isDesktopMode || !networkOnline) {
+      counts = localCounts;
+    } else {
+      // Online mode - try Supabase first, fallback to local
+      const cloudCounts = await getSupabaseDataCounts();
+      // Use cloud data if available, otherwise use local
+      counts = (cloudCounts.customers > 0 || cloudCounts.products > 0) ? cloudCounts : localCounts;
+    }
+
+    setDataCounts(counts);
+
+    // Check 1: Local Database Connection
     try {
       const db = await getDatabase();
-      const customerCount = await (db as any).customers.count().exec();
       checks.push({
         name: 'Local Database',
         status: 'ok',
-        message: `Connected. ${customerCount} customer records.`,
+        message: `Connected - IndexedDB ready`,
+        details: `${localCounts.customers + localCounts.products + localCounts.invoices + localCounts.expenses} local records`,
         icon: Database
       });
     } catch (error: any) {
@@ -68,15 +151,50 @@ export default function HealthCheckPage() {
       });
     }
 
-    // Check 2: Network Status (using actual connectivity check)
+    // Check 2: Cloud Database (if online mode)
+    if (!isDesktopMode && networkOnline && business?.id) {
+      try {
+        const { error } = await supabase.from('businesses').select('id').eq('id', business.id).single();
+        if (error) throw error;
+        checks.push({
+          name: 'Cloud Database',
+          status: 'ok',
+          message: 'Connected to Lovable Cloud',
+          details: `${counts.customers + counts.products + counts.invoices + counts.expenses} cloud records`,
+          icon: Server
+        });
+      } catch (error: any) {
+        checks.push({
+          name: 'Cloud Database',
+          status: 'warning',
+          message: 'Cloud connection unavailable',
+          icon: Server
+        });
+      }
+    }
+
+    // Check 3: Network Status
     checks.push({
       name: 'Network Status',
       status: networkOnline ? 'ok' : 'warning',
       message: networkOnline ? 'Online - Cloud sync available' : 'Offline - Changes saved locally',
+      details: isDesktopMode ? 'Desktop Mode (local-first)' : 'Online Mode',
       icon: networkOnline ? Wifi : WifiOff
     });
 
-    // Check 3: SMTP Configuration
+    // Check 4: Data Inventory
+    const totalRecords = counts.customers + counts.products + counts.invoices + counts.expenses;
+    checks.push({
+      name: 'Data Inventory',
+      status: totalRecords > 0 ? 'ok' : 'warning',
+      message: totalRecords > 0 
+        ? `${totalRecords} total records found`
+        : 'No data found - add demo data or create records',
+      details: `Customers: ${counts.customers} | Products: ${counts.products} | Invoices: ${counts.invoices} | Expenses: ${counts.expenses}`,
+      icon: Package
+    });
+
+    // Check 5: SMTP Configuration
     try {
       const smtp = await getSMTPConfig();
       checks.push({
@@ -94,7 +212,7 @@ export default function HealthCheckPage() {
       });
     }
 
-    // Check 4: Notification Queue
+    // Check 6: Notification Queue
     try {
       const stats = await getNotificationQueueStats();
       setNotificationStats(stats);
@@ -113,26 +231,43 @@ export default function HealthCheckPage() {
       });
     }
 
-    // Check 5: Audit Chain Integrity
+    // Check 7: Audit Log Integrity
     try {
-      const result = await verifyAuditChain();
-      setAuditChainValid(result.valid);
-      checks.push({
-        name: 'Audit Log Integrity',
-        status: result.valid ? 'ok' : 'error',
-        message: result.valid ? 'Chain verified - no tampering detected' : `Chain broken at: ${result.brokenAt}`,
-        icon: Shield
-      });
+      const auditLogs = await getAuditLogs({ limit: 1000 });
+      const logCount = auditLogs.length;
+      setAuditLogCount(logCount);
+
+      if (logCount === 0) {
+        setAuditChainValid(null);
+        checks.push({
+          name: 'Audit Log Integrity',
+          status: 'warning',
+          message: 'No local audit logs yet',
+          details: 'Add demo data or perform actions to generate logs',
+          icon: Shield
+        });
+      } else {
+        const result = await verifyAuditChain();
+        setAuditChainValid(result.valid);
+        checks.push({
+          name: 'Audit Log Integrity',
+          status: result.valid ? 'ok' : 'error',
+          message: result.valid 
+            ? `Chain verified - ${logCount} logs, no tampering detected` 
+            : `Chain broken at: ${result.brokenAt}`,
+          icon: Shield
+        });
+      }
     } catch (error: any) {
       checks.push({
         name: 'Audit Log Integrity',
         status: 'warning',
-        message: 'No audit logs yet',
+        message: 'Could not verify audit chain',
         icon: Shield
       });
     }
 
-    // Check 6: Storage Usage
+    // Check 8: Storage Usage
     try {
       if ('storage' in navigator && 'estimate' in navigator.storage) {
         const estimate = await navigator.storage.estimate();
@@ -156,7 +291,7 @@ export default function HealthCheckPage() {
       });
     }
 
-    // Check 7: Service Worker
+    // Check 9: Service Worker
     checks.push({
       name: 'Offline Cache',
       status: 'serviceWorker' in navigator ? 'ok' : 'warning',
@@ -172,7 +307,7 @@ export default function HealthCheckPage() {
 
   useEffect(() => {
     runHealthChecks();
-  }, []);
+  }, [business?.id]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -200,11 +335,13 @@ export default function HealthCheckPage() {
     }
   };
 
-  const overallHealth = healthChecks.every(c => c.status === 'ok') 
-    ? 'healthy' 
-    : healthChecks.some(c => c.status === 'error') 
-      ? 'critical' 
-      : 'warning';
+  const overallHealth = healthChecks.length === 0 
+    ? 'loading'
+    : healthChecks.every(c => c.status === 'ok') 
+      ? 'healthy' 
+      : healthChecks.some(c => c.status === 'error') 
+        ? 'critical' 
+        : 'warning';
 
   return (
     <PageWrapper className="space-y-6">
@@ -217,7 +354,7 @@ export default function HealthCheckPage() {
                 System Health Check
               </h1>
               <p className="page-description">
-                Monitor system status and diagnose issues
+                Monitor system status, data integrity, and diagnose issues
               </p>
             </div>
             <Button onClick={runHealthChecks} disabled={isRunning}>
@@ -232,6 +369,7 @@ export default function HealthCheckPage() {
           <Card className={
             overallHealth === 'healthy' ? 'border-success/50 bg-success/5' :
             overallHealth === 'critical' ? 'border-destructive/50 bg-destructive/5' :
+            overallHealth === 'loading' ? 'border-muted' :
             'border-warning/50 bg-warning/5'
           }>
             <CardContent className="pt-6">
@@ -241,6 +379,8 @@ export default function HealthCheckPage() {
                     <CheckCircle2 className="h-10 w-10 text-success" />
                   ) : overallHealth === 'critical' ? (
                     <XCircle className="h-10 w-10 text-destructive" />
+                  ) : overallHealth === 'loading' ? (
+                    <RefreshCw className="h-10 w-10 animate-spin text-muted-foreground" />
                   ) : (
                     <AlertTriangle className="h-10 w-10 text-warning" />
                   )}
@@ -248,6 +388,7 @@ export default function HealthCheckPage() {
                     <h2 className="text-xl font-semibold">
                       {overallHealth === 'healthy' ? 'All Systems Operational' :
                        overallHealth === 'critical' ? 'Critical Issues Detected' :
+                       overallHealth === 'loading' ? 'Running Health Check...' :
                        'Some Issues Detected'}
                     </h2>
                     {lastChecked && (
@@ -269,6 +410,54 @@ export default function HealthCheckPage() {
           </Card>
         </MotionItem>
 
+        {/* Data Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <MotionItem>
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  <span className="text-sm text-muted-foreground">Customers</span>
+                </div>
+                <div className="text-2xl font-bold mt-1">{dataCounts.customers}</div>
+              </CardContent>
+            </Card>
+          </MotionItem>
+          <MotionItem>
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  <span className="text-sm text-muted-foreground">Products</span>
+                </div>
+                <div className="text-2xl font-bold mt-1">{dataCounts.products}</div>
+              </CardContent>
+            </Card>
+          </MotionItem>
+          <MotionItem>
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <span className="text-sm text-muted-foreground">Invoices</span>
+                </div>
+                <div className="text-2xl font-bold mt-1">{dataCounts.invoices}</div>
+              </CardContent>
+            </Card>
+          </MotionItem>
+          <MotionItem>
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-primary" />
+                  <span className="text-sm text-muted-foreground">Expenses</span>
+                </div>
+                <div className="text-2xl font-bold mt-1">{dataCounts.expenses}</div>
+              </CardContent>
+            </Card>
+          </MotionItem>
+        </div>
+
         {/* Individual Checks */}
         <div className="grid md:grid-cols-2 gap-4">
           {healthChecks.map((check, index) => (
@@ -288,6 +477,9 @@ export default function HealthCheckPage() {
                         <div>
                           <h3 className="font-medium">{check.name}</h3>
                           <p className="text-sm text-muted-foreground mt-1">{check.message}</p>
+                          {check.details && (
+                            <p className="text-xs text-muted-foreground/70 mt-1">{check.details}</p>
+                          )}
                         </div>
                       </div>
                       {getStatusBadge(check.status)}
@@ -314,7 +506,7 @@ export default function HealthCheckPage() {
             <CardContent>
               <ul className="space-y-3">
                 {[
-                  { text: 'Audit logs enabled and tamper-evident', done: auditChainValid === true },
+                  { text: 'Audit logs enabled and tamper-evident', done: auditChainValid === true || auditLogCount > 0 },
                   { text: 'All admin actions are logged', done: true },
                   { text: 'Data exports are tracked', done: true },
                   { text: 'Login attempts are monitored', done: true },

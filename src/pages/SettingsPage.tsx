@@ -51,7 +51,58 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const seedData = useSeedData();
   const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'uptodate'>('idle');
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'uptodate' | 'downloading' | 'error'>('idle');
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+
+  // Listen for update status events from Electron
+  useEffect(() => {
+    if (isDesktopMode() && (window as any).electronAPI?.onUpdateStatus) {
+      const handleUpdateStatus = (data: { status: string; message: string }) => {
+        console.log('[SettingsPage] Update status received:', data);
+        setUpdateMessage(data.message);
+        
+        switch (data.status) {
+          case 'checking':
+            setUpdateStatus('checking');
+            setIsCheckingUpdates(true);
+            break;
+          case 'available':
+            setUpdateStatus('available');
+            setIsCheckingUpdates(false);
+            toast.info(`Update available: ${data.message}`);
+            break;
+          case 'not-available':
+            setUpdateStatus('uptodate');
+            setIsCheckingUpdates(false);
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+            toast.success('You are on the latest version!');
+            break;
+          case 'downloading':
+            setUpdateStatus('downloading');
+            toast.info(data.message);
+            break;
+          case 'downloaded':
+            setUpdateStatus('available');
+            setIsCheckingUpdates(false);
+            toast.success('Update downloaded! Restart to install.');
+            break;
+          case 'error':
+            setUpdateStatus('error');
+            setIsCheckingUpdates(false);
+            toast.error(`Update check failed: ${data.message}`);
+            break;
+          default:
+            break;
+        }
+      };
+      
+      (window as any).electronAPI.onUpdateStatus(handleUpdateStatus);
+    }
+  }, []);
 
   const [businessForm, setBusinessForm] = useState({
     name: business?.name || '',
@@ -168,29 +219,27 @@ export default function SettingsPage() {
   const handleCheckForUpdates = async () => {
     setIsCheckingUpdates(true);
     setUpdateStatus('checking');
+    setUpdateMessage(null);
     
     try {
       // In desktop mode, trigger the Electron updater via IPC
       if (isDesktopMode() && (window as any).electronAPI?.checkForUpdates) {
         (window as any).electronAPI.checkForUpdates();
-        toast.info('Checking for updates...');
-        
-        // Listen for update response
+        toast.info('Checking for updates from GitHub...');
+        // The actual status will come through the onUpdateStatus listener
+        // Set a timeout as fallback in case no response comes
         setTimeout(() => {
-          setIsCheckingUpdates(false);
-          setUpdateStatus('uptodate');
-          // Trigger confetti for up-to-date celebration
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-          });
-          toast.success('You are on the latest version!');
-        }, 2000);
+          if (updateStatus === 'checking') {
+            setIsCheckingUpdates(false);
+            setUpdateStatus('error');
+            toast.error('No response from update server. Check your internet connection.');
+          }
+        }, 15000); // 15 second timeout
       } else {
         // Web mode - just show current version
         await new Promise(resolve => setTimeout(resolve, 1500));
         setUpdateStatus('uptodate');
+        setIsCheckingUpdates(false);
         confetti({
           particleCount: 100,
           spread: 70,
@@ -200,8 +249,7 @@ export default function SettingsPage() {
       }
     } catch (error) {
       toast.error('Failed to check for updates');
-      setUpdateStatus('idle');
-    } finally {
+      setUpdateStatus('error');
       setIsCheckingUpdates(false);
     }
   };

@@ -6,10 +6,10 @@ import { BrowserRouter, HashRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BusinessProvider } from "@/contexts/BusinessContext";
+import { AppEnvironmentProvider } from "@/contexts/AppEnvironmentContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
-import { DesktopModeIndicator } from "@/components/DesktopModeIndicator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { isDesktopMode, shouldEnablePWA } from "@/lib/desktop-mode";
 import LandingPage from "./pages/LandingPage";
@@ -72,19 +72,20 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <OfflineBanner />
-          {/* Only show PWA install prompt in web mode, not desktop */}
-          {shouldEnablePWA() && <PWAInstallPrompt />}
-          <DesktopModeIndicator />
-          <Router>
-            <AuthProvider>
-              <BusinessProvider>
-                <AppRoutes />
-              </BusinessProvider>
-            </AuthProvider>
-          </Router>
+          <AppEnvironmentProvider>
+            <Toaster />
+            <Sonner />
+            <OfflineBanner />
+            {/* Only show PWA install prompt in web mode, not desktop */}
+            {shouldEnablePWA() && <PWAInstallPrompt />}
+            <Router>
+              <AuthProvider>
+                <BusinessProvider>
+                  <AppRoutes />
+                </BusinessProvider>
+              </AuthProvider>
+            </Router>
+          </AppEnvironmentProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

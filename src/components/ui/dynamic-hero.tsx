@@ -43,6 +43,7 @@ interface HeroSectionProps {
     videoUrl?: string;
     navItems?: NavItem[];
     onButtonClick?: () => void;
+    enableCursorAnimation?: boolean; // Only show cursor animation when true
 }
 
 const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({
@@ -53,6 +54,7 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({
     videoUrl,
     navItems = defaultNavItems,
     onButtonClick,
+    enableCursorAnimation = false, // Disabled by default
 }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const targetRef = useRef<HTMLButtonElement>(null);
@@ -161,6 +163,9 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({
     }, []);
 
     useEffect(() => {
+        // Only run cursor animation when explicitly enabled
+        if (!enableCursorAnimation) return;
+        
         const canvas = canvasRef.current;
         if (!canvas || !targetRef.current) return;
 
@@ -197,7 +202,7 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({
                 cancelAnimationFrame(animationFrameIdRef.current);
             }
         };
-    }, [drawArrow]);
+    }, [drawArrow, enableCursorAnimation]);
 
     useEffect(() => {
         const videoElement = videoRef.current;
@@ -380,10 +385,12 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({
                 </div>
             </div>
 
-            <canvas
-                ref={canvasRef}
-                className="fixed inset-0 z-0 pointer-events-none"
-            />
+            {enableCursorAnimation && (
+                <canvas
+                    ref={canvasRef}
+                    className="fixed inset-0 z-0 pointer-events-none"
+                />
+            )}
 
             <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
         </section>

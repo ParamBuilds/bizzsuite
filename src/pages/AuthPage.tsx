@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { PasswordStrengthIndicator, getPasswordStrength } from '@/components/auth/PasswordStrengthIndicator';
+import { ModeSwitcher } from '@/components/ModeSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 // Common passwords to reject
 const commonPasswords = [
@@ -129,6 +131,12 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex relative overflow-hidden">
+      {/* Mode Switcher & Theme Toggle - Top Right */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <ModeSwitcher />
+        <ThemeToggle />
+      </div>
+      
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5">
         {/* Animated gradient mesh */}

@@ -24,14 +24,17 @@ function initAutoUpdater(window) {
 
 function checkForUpdates() {
   console.log('[AutoUpdater] Checking for updates...');
+  sendStatusToWindow('checking', 'Checking for updates...');
   autoUpdater.checkForUpdates().catch(err => {
     console.log('[AutoUpdater] Error checking for updates:', err.message);
+    sendStatusToWindow('error', err.message);
   });
 }
 
 // Update available
 autoUpdater.on('update-available', (info) => {
   console.log('[AutoUpdater] Update available:', info.version);
+  sendStatusToWindow('available', `Version ${info.version} is available!`);
   
   dialog.showMessageBox(mainWindow, {
     type: 'info',
@@ -52,6 +55,7 @@ autoUpdater.on('update-available', (info) => {
 // No update available
 autoUpdater.on('update-not-available', (info) => {
   console.log('[AutoUpdater] No update available, current version is latest');
+  sendStatusToWindow('not-available', `v${info.version} is the latest version`);
 });
 
 // Download progress
@@ -64,6 +68,7 @@ autoUpdater.on('download-progress', (progressObj) => {
 // Update downloaded
 autoUpdater.on('update-downloaded', (info) => {
   console.log('[AutoUpdater] Update downloaded:', info.version);
+  sendStatusToWindow('downloaded', `Version ${info.version} ready to install`);
   
   dialog.showMessageBox(mainWindow, {
     type: 'info',

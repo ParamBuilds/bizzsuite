@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Desktop build outputs
+BizSuiteDesktop/release/
+BizSuiteDesktop/dist/
+BizSuiteDesktop/node_modules/
+
+# Web build output
+dist/
+node_modules/
